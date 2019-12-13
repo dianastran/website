@@ -1,0 +1,353 @@
+---
+title: 'Project 2: Modeling, Testing, Predicting'
+author: "Diana Tran dst638"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=F, fig.width=8,tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(tidyr)
+```
+> ### Introduction 
+*The dataset I chose for this project is comprised of the nutrition data on 77 different cereal products. It includes the name of the cereal, the manufactuerer of the cereal (A= American Home Good Products, G= General Mills, K = Kelloggs, N= Nabisco, P = Post, Q = Quaker Oats, R = Ralston purina), the type (C= cold, H = hot), the calories (per serving), the grams of protein,milligrams of sodium, grams of dietary fiber, grams of complex carbohydrates, the grams of sugar, milligrams of potassium, vitamins (percentage of FDA recommended), display shelf, wieght in ounces in one serving, cups in one serving, and lastly the rating of the cereal.*
+
+```{r}
+cereal<-read.csv("~/Downloads/cereal.csv")
+cereal <- cereal %>% mutate(y=ifelse(type=="C",1,0))
+```
+
+
+*1. A MANOVA test was performed to determine the effect of manufacturer (mfr) on 10 numeric variables (calories,sugars, protein,fat,sodium, fiber,carbo, potass,vitamins,and rating). According to the test, there were significant differences in the numerical variables that differed across the manufacturers.Next, a univariate ANOVA was performed for each dependent variable as follow-up tests to the MANOVA, using the Bonferroni method for controlling Type 1 error rates for multiple comparrisons and the test proved that 2 of the 10 variables, sodium and rating, were dependent on the manufacturer.Post hoc analysis was performed to conduct pairwise t-tests on each dependent variable and found that the manufacturers were found to differ significantly from each other in terms of sodium and rating after adjusting for multiple comparisons (bonferroni). It is most unprobable that the data met all the assumptions for a MANOVA test, with the multivariate normality being a high variable across the dependent variables, but according to the covariance matrices there is somewhat equal variance occuring in this particular dataset.*
+```{r}
+man1 <-manova(cbind(calories,sugars, protein,fat,sodium, fiber,carbo, potass,vitamins, rating)~mfr,data= cereal)
+summary(man1, tol = 0)
+
+```
+```{r}
+summary.aov(man1, tol =0)
+```
+
+```{r}
+cereal %>% group_by(mfr) %>% summarize(mean(calories), mean(protein), mean(fat), mean(sodium), mean(fiber), mean(carbo), mean(sugars), mean(potass), mean(vitamins), mean(rating))
+```
+```{r}
+glimpse(pairwise.t.test(cereal$calories, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$sugars, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$rating, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$sodium, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$carbo, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$fat, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$protein, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$potass, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$vitamins, cereal$mfr), p.adj = "bonferroni")
+glimpse(pairwise.t.test(cereal$fiber, cereal$mfr), p.adj = "bonferroni")
+```
+
+
+*2. The null hypothesis: For amount of sugar, calories, and rating, the means of each manufacturer are equal. The alternative hypothesis: For at least one DV, at least one manufactuerer mean is different. Since the p-value is 0.004, which is less than alpha (0.05), we can reject the null hypothesis and accept the alternative hypthesis. The results of the randomization test, PERMANOVA, indicate that the manufacturers do vary with regard to the 6 numerical variables.*
+
+
+```{r}
+library(vegan)
+cereal1 <- cereal %>% select(-name,- type, -y,-weight,-cups, - shelf, -sugars, - fat, - fiber, -protein) %>% na.omit()
+dist <- vegdist(sqrt(cereal1[,-c(1)]),method= "bray", na.rm= TRUE)
+distA <-vegdist(sqrt(cereal1[cereal1$mfr == "A", -c(0)]), method = "bray",na.rm = TRUE)
+distG <-vegdist(sqrt(cereal1[cereal1$mfr == "G", -c(0)]), method = "bray",na.rm = TRUE)
+distK <-vegdist(sqrt(cereal1[cereal1$mfr == "K", -c(0)]), method = "bray",na.rm = TRUE)
+distN <-vegdist(sqrt(cereal1[cereal1$mfr == "N", -c(0)]), method = "bray",na.rm = TRUE)
+distP <-vegdist(sqrt(cereal1[cereal1$mfr == "P", -c(0)]), method = "bray",na.rm = TRUE)
+distQ <-vegdist(sqrt(cereal1[cereal1$mfr == "Q", -c(0)]), method = "bray", na.rm = TRUE)
+distR <-vegdist(sqrt(cereal1[cereal1$mfr == "R", -c(0)]), method = "bray",na.rm = TRUE)
+
+SSR <-sum(distA^2)/1 + sum(distG^1)/22 + sum(distK^2)/23+ sum(distN^2)/6 + sum(distP^2)/9 + sum(distQ^2)/8 + sum(distR^2)/8
+
+SST <- sum(dist^2)/77
+Fstat <- (SST-SSR)/(SSR/70)
+Fstat
+
+```
+
+
+```{r eval=F}
+perm.sampdist<-replicate(5000,{
+  new<-cereal1
+  new$mfr<-sample(cereal1$mfr)
+  dist<-vegdist(sqrt(new[,-c(1)]),method="bray",na.rm= TRUE)
+distA <-vegdist(sqrt(new[new$mfr == "A", -c(1)]), method = "bray",na.rm = TRUE)
+distG <-vegdist(sqrt(new[new$mfr == "G", -c(1)]), method = "bray",na.rm = TRUE)
+distK <-vegdist(sqrt(new[new$mfr == "K", -c(1)]), method = "bray",na.rm = TRUE)
+distN <-vegdist(sqrt(new[new$mfr == "N", -c(1)]), method = "bray",na.rm = TRUE)
+distP <-vegdist(sqrt(new[new$mfr == "P", -c(1)]), method = "bray",na.rm = TRUE)
+distQ <-vegdist(sqrt(new[new$mfr == "Q", -c(1)]), method = "bray", na.rm = TRUE)
+distR <-vegdist(sqrt(new[new$mfr == "R", -c(1)]), method = "bray",na.rm = TRUE)
+
+SSR <-sum(distA^2)/1 + sum(distG^1)/22 + sum(distK^2)/23+ sum(distN^2)/6 + sum(distP^2)/9 + sum(distQ^2)/8 + sum(distR^2)/8
+
+SST <- sum(dist^2)/77
+} )
+
+mean(perm.sampdist > Fstat)
+```
+
+```{r}
+adonis(dist~mfr,data=cereal1, method = "bray")
+```
+
+```{r}
+#SSR <-sum(distA^2)/1 + sum(distG^1)/22 + sum(distK^2)/23+ sum(distN^2)/6 + sum(distP^2)/9 + sum(distQ^2)/8 + sum(distR^2)/8
+
+#SST <- sum(dist^2)/77
+SST <- sum(dist^2)/77
+SSW <- cereal1 %>% group_by(mfr) %>% select(sodium, rating, calories) %>% do(d=dist(.[2:2], "euclidean")) %>% ungroup()%>% summarize(sum(unlist(d)))
+
+```
+
+
+
+*3. The coefficient estimates determine a predicted sodium amount decreasing at -12.09325 across all of the manufacturers. Manufacturer R had an amount of sodium 224.47 more than manufacturer A. Given a manufacturer with an average centered caloric value, then the predicted amount of sodium would be 1.757 milligrams less than the average amount of sodium from cereal made by manufacturer A. The proportion of the variation in the outcome that the model explains is approximately .464. When comparing the model with no interactions to the model with interactions and the null model, the differences were proven to be significant via the likelihood ratio test.The robust standard errors produced returns with data that was more significant than the original linear regression model. *
+```{r}
+cereal %>% summarize(mean(calories), na.rm=TRUE)
+glimpse(data.frame("mc_calories"= cereal$calories -mean(cereal$calories),na.rm = TRUE))
+cereal$mc_calories <-cereal$calories-mean(cereal$calories,na.rm=TRUE)
+
+fit3 <-lm(sodium ~mfr* mc_calories, data= cereal)
+glimpse(summary(fit3))
+```
+```{r}
+ggplot(cereal, aes(x= sodium, y = mc_calories, color = mfr)) + geom_point() + stat_smooth(method = "lm", se =FALSE, fullrange= TRUE)
+```
+
+```{r}
+ggplot(fit3, aes(sodium, mc_calories)) + geom_point() + geom_smooth(method = 'lm', se= FALSE)
+```
+```{r}
+resids <- fit3$residuals
+fitvalue <- fit3$fitted.values
+ggplot() + geom_point(aes(fitvalue, resids)) + geom_hline(yintercept =0, color = 'purple')
+```
+
+```{r}
+ggplot() + geom_histogram(aes(resids), bins = 20)
+ggplot() + geom_qq(aes(sample= resids))
+```
+```{r}
+library(lmtest)
+library(sandwich)
+coeftest(fit3, vcov = vcovHC(fit3))
+glimpse(fit3 %>% summary(robust = TRUE))
+
+
+```
+```{r}
+glimpse(summary(fit3))
+```
+```{r}
+fit3a <- lm(rating ~ sodium + mc_calories, data= cereal)
+glimpse(summary(fit3a))
+```
+```{r}
+lrtest(fit3a, fit3)
+lrtest(fit3a)
+```
+
+
+*4. Rerunning the same regresison model(with interaction), but with boostrapped standard errors, the new model has lower SE's than the original regression model.*
+```{r}
+glimpse(summary(fit3))
+```
+```{r}
+coeftest(fit3, vcov = vcovHC(fit3))[,1:2]
+```
+
+```{r}
+library(lmtest)
+library(sandwich)
+set.seed(348)
+boot_dat <- cereal[sample(nrow(cereal),replace = TRUE),]
+samp_distv <-replicate(1000, {
+  boot_dat <- cereal[sample(nrow(cereal), replace = TRUE),]
+  fit4 <- lm(sodium ~mfr* mc_calories, data= boot_dat)
+  coeftest(fit4)
+})
+
+do.call(rbind,lapply(samp_distv,unlist)) %>% as.data.frame %>% summarize_all(sd, na.rm= TRUE)
+```
+
+
+*5. Per the logistic regression, the intercept of the coefficient test corresponds with the log odds of the probability of being classified as a cold cereal. The calories per serving suggest that for every 1 unit increase, the log odds of the probability of being a cold cereal decreases by 0.04540787. For every 1 unit increase in the rating, the log odds of probability of being classified as a cold cereal decreases by 0.10825584. However, the estimates were not statistically significant predictors of whether a cereal is classified as cold or not. The accuracy of the model was good, with it correctly classifying whether a cereal was cold or not 81% of the time. The TPR was .959, a great score, predicting true positives correctly 95.9% of the time. Conversely, the model was bad at predicting the true negatives, classifying them correctly 0% of the time. Considering PPV, or recall, the model was again great with 96% of the cereals classified as cold actually being cold. The calculated AUC was 0.7995, a fair value for preidcing whether a cereal is classified as cold or not, so calorie count and ratings are somewhat significant predictors, but not the most accurate. Using the 10 fold cross validation method, the out of sample values for accuracy and sensitivity were greater, suggesting that this model method were better at classifying whether or not a cereal is cold- and with a better true positive rate, classifying more cold cereals correctly. Neither the model nor the 10 fold cross validation returned a true negative rate, however for the 10 fold cv, the ppv was lower. The AUC for the 10 fold cv model was considerably higher( at 1 compared to the previous at .8), which may suggest that this model is just as/ if not more accurate than the previous at correctly classifying the cereals in their correct categories.*
+```{r}
+odds <- function(p)p/(1-p)
+p <-seq(0,1, by= .1)
+cbind(p, odds = odds(p)) %>% round(4)
+
+
+```
+```{r}
+logit <- function(p)log(odds(p))
+fit5 <- glm(y~ calories +rating, data= cereal, family = binomial (link = logit))
+coef(fit5)
+exp(coef(fit5))
+```
+```{r}
+logistic <- function(x){exp(x)/(1+ex(x))}
+pca1 <- princomp(cereal[c('y', 'calories','rating')])
+cereal$predictor <-pca1$scores [,1]
+fit5a <- glm(y~predictor, data= cereal, family = "binomial")
+cereal$prob <- predict(fit5a, type = "response")
+table(predict=as.numeric(cereal$prob>0.9), truth= cereal$y) %>% addmargins
+```
+```{r}
+TPR <- 71/74
+TNR <-0/3
+PPV <- 71/74
+ACC <- (0+71)/77
+
+cereal$logit. <- predict(fit5)
+cereal$y. <-factor(cereal$y, levels= c(1,0))
+ggplot(cereal, aes(logit., fill = y.)) + geom_density(alpha= 0.4) + geom_vline(xintercept =0, lty =2)
+```
+```{r}
+sens <- function(p, data= cereal, y = y.) mean(cereal[cereal$y.== 1,]$prob >p)
+
+spec <- function(p,data = cereal, y= y.) mean(cereal[cereal$y. == 0,]$prob <p)
+
+sensitivity5 <- sapply(seq(0,1,.01), sens, cereal)
+specificity5 <- sapply(seq(0,1,.01), spec, cereal)
+
+ROC <- data.frame(sensitivity5, specificity5, cutoff= seq(0,1,.01))
+
+ROC %>% gather(key, rate, -cutoff) %>% ggplot(aes(cutoff, rate, color = key)) +geom_path() + geom_vline(xintercept = c(.1,.1,.9), lty =2, color = "gray30")
+```
+```{r}
+ROC$TPR5 <- rev(sensitivity5)
+ROC$FPR5 <- rev(1-specificity5)
+ROC %>% ggplot(aes(FPR5,TPR5)) +geom_path(size=1) + geom_segment(aes(x=0,y=0, xend=1, yend=1), lty=2) + scale_x_continuous(limits= c(0,1))
+```
+```{r}
+widths5 <- diff(ROC$FPR5)
+heights5 <-vector()
+for(i in 1:100) heights5[i] <- ROC$TPR5[i] +ROC$TPR5[i+1]
+AUC5 <-sum(heights5*widths5/2)
+AUC5 %>% round(4)
+```
+```{r}
+cereal5 <- cereal %>% select(-predictor, -prob, -logit., -y.)
+prob <- predict(fit5a, type ="response")
+class_diag <- function(probs, truth) {
+  tab <- table(factor(probs >0.5, levels = c("FALSE", "TRUE")), truth)
+  acc= sum(diag(tab))/sum(tab)
+  sens = tab[2,2]/colSums(tab) [2]
+  spec = tab [1,1]/colSums(tab) [1]
+  ppv = tab [2,2]/rowSums(tab) [2]
+  if(is.numeric(truth)== FALSE & is.logical(truth)== FALSE)truth <- as.numeric(truth)-1
+  ord <- order(probs, decreasing = TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  TPR = cumsum(truth)/max(1,sum(truth))
+  FPR = cumsum(!truth)/max(1, sum(!truth))
+  dup <- c(probs[-1] >probs[-length(probs)], FALSE)
+  TPR <- c(0, TPR[!dup],1); FPR <- c(0,FPR[!dup],1)
+  n <-length(TPR)
+  auc <-sum(((TPR[-1] +TPR[-n])/2)* (FPR[-1]-FPR[-n]))
+  data.frame(acc,sens,spec,spec,ppv,auc)
+  
+}
+
+class_diag(prob, cereal$y)
+```
+```{r}
+library(pROC)
+set.seed(1234)
+k=10
+
+data5<- cereal[sample(nrow(cereal)),]
+folds<- cut(seq(1:nrow(cereal)), breaks =k, labels = F)
+diags<- NULL 
+
+for(i in 1:k) {
+train<-data5[folds!= i,]
+test<-data5[folds == i,]
+truth=test$y
+fit5b<-glm(y~calories+ rating, data= train, family = "binomial")
+probs<-predict(fit5b, newdata= test, type = "response")
+diags<-rbind(diags,class_diag(truth,probs))
+  
+}
+
+
+
+apply(diags,2,mean)
+```
+
+
+
+*6. Based on the Lasso regression that was performed, there was no variable that was the most important predictor of whether a cereal is considered hot or cold. This would make sense as this is something that is something that nutritional value/rating would affect and non of the variables were retained.  *
+```{r}
+library(glmnet)
+library(Matrix)
+df = subset(cereal, select = -c(shelf, weight, cups,name,type, mfr))
+df <- as.vector(df)
+
+fit6 <- lm(y~., data= df)
+yhat <- predict(fit6)
+mean((df$y- yhat)^2)
+```
+
+```{r}
+set.seed(1234)
+k=10
+data6 <-df[sample(nrow(df)),]
+folds <- cut(seq(1:nrow(df)), breaks = k, labels = F)
+diags <- NULL 
+
+
+for(i in 1:k) {
+  
+  train <- data6[folds!= i,]
+  test <- data6[folds==i,]
+  fit6 <- lm(y~., data= train)
+  yhat <- predict(fit6, newdata= test)
+  diags <- mean((test$y-yhat)^2)
+  
+}
+
+mean(diags)
+
+
+```
+```{r}
+y <- data.matrix(df$y)
+x <-df %>% dplyr:: select(-y) %>% data.matrix
+
+cv <- cv.glmnet(x,y, family = "binomial")
+lasso1 <-glmnet(x,y,family = "binomial", lambda = cv$lambda.1se)
+coef(lasso1)
+```
+```{r}
+set.seed(1234)
+k=10
+data6 <-df[sample(nrow(df)),]
+folds <- cut(seq(1:nrow(df)), breaks = k, labels = F)
+diags <- NULL 
+
+
+for(i in 1:k) {
+  
+  train <- data6[folds!= i,]
+  test <- data6[folds==i,]
+  fit6a <- lm(y~ protein + fat + sodium + fiber + carbo + potass + vitamins + rating, data= train)
+  yhat <- predict(fit6a, newdata= test)
+  diags <- mean((test$y-yhat)^2)
+  
+}
+
+mean(diags)
+
+
+```
+

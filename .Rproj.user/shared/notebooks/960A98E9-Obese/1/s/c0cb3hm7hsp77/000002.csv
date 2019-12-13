@@ -1,0 +1,14 @@
+"0","#3"
+"0","fullset %>% select(Country, ob.total, Income.Group) %>% glimpse()"
+"1","Observations: 126
+"
+"1","Variables: 3
+"
+"1","$ Country      [3m[38;5;246m<chr>[39m[23m ""Angola"", ""Albania"", ""United …
+"
+"1",""
+"1","$ ob.total     [3m[38;5;246m<dbl>[39m[23m 10.2, 17.6, 37.2, 26.3, 19.5,…
+"
+"1",""
+"1","$ Income.Group [3m[38;5;246m<fct>[39m[23m 2 (Upper-Middle Income), 2 (U…
+"

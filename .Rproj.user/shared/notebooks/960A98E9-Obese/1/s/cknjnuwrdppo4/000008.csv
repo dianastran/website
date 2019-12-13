@@ -1,0 +1,49 @@
+"0","head(gendergap)%>% glimpse()"
+"1","Observations: 6
+"
+"1","Variables: 15
+"
+"1","$ Country                                        [3m[38;5;246m<fct>[39m[23m …
+"
+"1",""
+"1","$ Overall...Rank                                 [3m[38;5;246m<int>[39m[23m …
+"
+"1",""
+"1","$ Overall...Score                                [3m[38;5;246m<dbl>[39m[23m …
+"
+"1",""
+"1","$ Economic.Participation.and.Opportunity...Rank  [3m[38;5;246m<int>[39m[23m …
+"
+"1",""
+"1","$ Economic.Participation.and.Opportunity...Score [3m[38;5;246m<dbl>[39m[23m …
+"
+"1",""
+"1","$ Educational.Attainment...Rank                  [3m[38;5;246m<int>[39m[23m …
+"
+"1",""
+"1","$ Educational.Attainment...Score                 [3m[38;5;246m<dbl>[39m[23m …
+"
+"1",""
+"1","$ Health.and.Survival...Rank                     [3m[38;5;246m<int>[39m[23m …
+"
+"1",""
+"1","$ Health.and.Survival...Score                    [3m[38;5;246m<dbl>[39m[23m …
+"
+"1",""
+"1","$ Political.Empowerment...Rank                   [3m[38;5;246m<int>[39m[23m …
+"
+"1",""
+"1","$ Political.Empowerment...Score                  [3m[38;5;246m<dbl>[39m[23m …
+"
+"1",""
+"1","$ Flag                                           [3m[38;5;246m<fct>[39m[23m …
+"
+"1",""
+"1","$ Report.Page                                    [3m[38;5;246m<fct>[39m[23m …
+"
+"1",""
+"1","$ Region                                         [3m[38;5;246m<fct>[39m[23m …
+"
+"1",""
+"1","$ Income.Group                                   [3m[38;5;246m<fct>[39m[23m …
+"

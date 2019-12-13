@@ -1,0 +1,3 @@
+"0",""
+"0","ggplot(fullset, aes( x=Female , y=econpart.opp.score, fill=Income.Group)) + geom_bar(stat=""summary"",fun.y =""mean"", position= ""dodge"") + ggtitle(""Education Participation and Opporunity Score vs Obesity Percentage by Income Group"") + ylab(""Economic participation and Opporunity Score"") + xlab(""Female Obesity Percentage"") + scale_x_continuous(breaks = seq(1, 50, 2))"
+"0",""

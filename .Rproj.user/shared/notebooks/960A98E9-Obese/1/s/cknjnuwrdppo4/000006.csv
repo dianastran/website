@@ -1,0 +1,5 @@
+"0",""
+"0","obesity <- read.csv(""~/Downloads/obese.csv"")"
+"0","gendergap <-read.csv(""~/Downloads/gender.csv"")"
+"0","obesity <-obesity %>% rename(ob.total = value)"
+"0","head(obesity)"

@@ -1,0 +1,2 @@
+"0",""
+"0","gendergap <- gendergap %>% rename (overallrank = Overall...Rank, overallscore = Overall...Score, econpart.opp.rank = Economic.Participation.and.Opportunity...Rank, econpart.opp.score = Economic.Participation.and.Opportunity...Score, edu.attain.rank = Educational.Attainment...Rank, edu.attain.score = Educational.Attainment...Score, healthsurvivalrank= Health.and.Survival...Rank, healthsurvivalscore = Health.and.Survival...Score, polemp.rank = Political.Empowerment...Rank, polemp.score= Political.Empowerment...Score)"

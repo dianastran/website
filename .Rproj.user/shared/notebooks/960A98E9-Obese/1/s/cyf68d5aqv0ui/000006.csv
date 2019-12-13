@@ -1,0 +1,4 @@
+"0",""
+"0","fullsetpca$loadings[1:13, 1:2] %>% as.data.frame %>% rownames_to_column %>% ggplot() + geom_hline(aes(yintercept = 0), lty =2) +"
+"0","  geom_vline(aes(xintercept= 0), lty =2) + ylab (""PC2"") + xlab(""PC1"") + geom_segment(aes(x= 0, y= 0, xend = Comp.1, yend = Comp.2), "
+"0","                       arrow= arrow(), col= ""purple"") + geom_label(aes(x= Comp.1*1.1, y = Comp.2 *1.1, label = rowname))"

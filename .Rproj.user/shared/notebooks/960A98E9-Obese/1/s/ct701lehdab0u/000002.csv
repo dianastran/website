@@ -1,0 +1,3 @@
+"0","#visualizations"
+"0","library(RColorBrewer)"
+"0","ggplot(fullset, aes(ob.total, overallrank, color = Region)) + geom_point()+ ggtitle(""Overall Gender Gap Ranking vs Total Obesity Percentage by Region"") + ylab(""Overall Gender Gap Ranking"") + xlab(""Obesity Percentage"") + scale_y_continuous(breaks = seq(0, 150, 10))+ scale_x_continuous(breaks = seq(0, 50,5)) + scale_color_manual(values = c(""red"", ""orange"", ""yellow"", ""green"", ""blue"", ""purple""))"

@@ -1,0 +1,78 @@
+---
+title: Python stuff
+author: Diana Tran
+date: '2019-12-12'
+slug: python-stuff
+categories: []
+tags: []
+description: ''
+---
+
+# Python discussion 
+
+This is the blog post that is dedicated to Python and what we've learned in class. The thing I most enjoyed about Python this semester was what we learned for homework 11 where our task was to use regular expressions in python to match (and return) the requested parts in each. I just really enjoyed the process of looking for patterns in the strings that could ultimately be used in the re.findall() function to return what was asked. The following chunks of code below are some of my favorites from the homework. 
+
+```{r}
+library("reticulate")
+```
+
+
+matching all ftp addresses in the string
+```{python}
+import re
+
+string3=r"Fedora Core 		ftp 	\
+Fedora Extras 	http 	ftp 	rsync\
+          ftp://ftp7.br.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp3.de.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.is.FreeBSD.org/pub/FreeBSD/ (ftp / rsync)\
+          ftp://ftp4.jp.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.no.FreeBSD.org/pub/FreeBSD/ (ftp / rsync)\
+        *\
+          ftp://ftp3.no.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp.pt.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp1.ro.FreeBSD.org/pub/FreeBSD/ (ftp / ftpv6)\
+          ftp://ftp3.es.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp2.tw.FreeBSD.org/pub/FreeBSD/ (ftp / ftpv6 / http / httpv6 / rsync / rsyncv6)\
+          ftp://ftp6.uk.FreeBSD.org/pub/FreeBSD/ (ftp)\
+          ftp://ftp6.us.FreeBSD.org/pub/FreeBSD/ (ftp / http)"
+
+
+re.findall(r'(ftp://ftp[0-9]?.[a-z]*.FreeBSD.org/pub/FreeBSD/)', string3)
+```
+matching all latex math-mode text (anything wrapped in $, including the $s) in the string
+```{python}
+
+string4=r"We try to quantitatively capture these characteristics by defining a set of indexes,\
+which can be computed using the mosaic image and the corresponding ground truth: \
+\begin{itemize} \
+    \item $\mu_{A_T}$ and $\sigma_{A_T}$, the mean and standard deviation of the tiles area $A_T$, respectively; \
+    \item $\rho_\text{filler}$, the ratio between the filler area and the overall mosaic are, computed as \
+$\rho_\text{filler}=\frac{\sum_{T \in \mathcal{T} A_T}}{A}$, being $A$ the area of the mosaic; \
+    \item \todo{does it worth?}; \
+    \item \todo{does it worth?}; \
+    \item $\mu_{C_T}$, the mean of the tiles \emph{color dispersion} $C_T$, \
+being $C_T = \sigma_R+\sigma_G+\sigma_B$, where $\sigma_R$, $\sigma_G$ and $\sigma_B$ are the \
+standard deviation of the red, green and blue channel values of the pixels within the tile $T$.\
+After applying a method to an image, we compare the segmented image (i.e., the result) \
+against the ground truth and assess the performance according to the following three metrics: \
+\begin{itemize} \
+    \item average tile precision $P$ \
+    \item average tile recall $R$ \
+    \item tile count error $C$"
+
+re.findall(r'(\$[\\]*[^\$]*\$)',string4)
+
+```
+
+matching restriction enzyme binding sites ANTAAT and GCRWTG.
+
+Note that per the IUPAC nucleotide code, N is any base, R is A or G, W is A or T
+
+```{python}
+string7="ATGGCAATAACCCCCCGTTTCTACTTCTAGAGGAGAAAAGTATTGACATGAGCGCTCCCGGCACAAGGGCCAAAGAAGTCTCCAATTTCTTATTTCCGAATGACATGCGTCTCCTTGCGGGTAAATCACCGACCGCAATTCATAGAAGCCTGGGGGAACAGATAGGTCTAATTAGCTTAAGAGAGTAAATCCTGGGATCATTCAGTAGTAACCATAAACTTACGCTGGGGCTTCTTCGGCGGATTTTTACAGTTACCAACCAGGAGATTTGAAGTAAATCAGTTGAGGATTTAGCCGCGCTATCCGGTAATCTCCAAATTAAAACATACCGTTCCATGAAGGCTAGAATTACTTACCGGCCTTTTCCATGCCTGCGCTATACCCCCCCACTCTCCCGCTTATCCGTCCGAGCGGAGGCAGTGCGATCCTCCGTTAAGATATTCTTACGTGTGACGTAGCTATGTATTTTGCAGAGCTGGCGAACGCGTTGAACACTTCACAGATGGTAGGGATTCGGGTAAAGGGCGTATAATTGGGGACTAACATAGGCGTAGACTACGATGGCGCCAACTCAATCGCAGCTCGAGCGCCCTGAATAACGTACTCATCTCAACTCATTCTCGGCAATCTACCGAGCGACTCGATTATCAACGGCTGTCTAGCAGTTCTAATCTTTTGCCAGCATCGTAATAGCCTCCAAGAGATTGATGATAGCTATCGGCACAGAACTGAGACGGCGCCGATGGATAGCGGACTTTCGGTCAACCACAATTCCCCACGGGACAGGTCCTGCGGTGCGCATCACTCTGAATGTACAAGCAACCCAAGTGGGCCGAGCCTGGACTCAGCTGGTTCCTGCGTGAGCTCGAGACTCGGGATGACAGCTCTTTAAACATAGAGCGGGGGCGTCGAACGGTCGAGAAAGTCATAGTACCTCGGGTACCAACTTACTCAGGTTATTGCTTGAAGCTGTACTATTTTAGGGGGGGAGCGCTGAAGGTCTCTTCTTCTCATGACTGAACTCGCGAGGGTCGTGAAGTCGGTTCCTTCAATGGTTAAAAAACAAAGGCTTACTGTGCGCAGAGGAACGCCCATCTAGCGGCTGGCGTCTTGAATGCTCGGTCCCCTTTGTCATTCCGGATTAATCCATTTCCCTCATTCACGAGCTTGCGAAGTCTACATTGGTATATGAATGCGACCTAGAAGAGGGCGCTTAAAATTGGCAGTGGTTGATGCTCTAAACTCCATTTGGTTTACTCGTGCATCACCGCGATAGGCTGACAAAGGTTTAACATTGAATAGCAAGGCACTTCCGGTCTCAATGAACGGCCGGGAAAGGTACGCGCGCGGTATGGGAGGATCAAGGGGCCAATAGAGAGGCTCCTCTCTCACTCGCTAGGAGGCAAATGTAAAACAATGGTTACTGCATCGATACATAAAACATGTCCATCGGTTGCCCAAAGTGTTAAGTGTCTATCACCCCTAGGGCCGTTTCCCGCATATAAACGCCAGGTTGTATCCGCATTTGATGCTACCGTGGATGAGTCTGCGTCGAGCGCGCCGCACGAATGTTGCAATGTATTGCATGAGTAGGGTTGACTAAGAGCCGTTAGATGCGTCGCTGTACTAATAGTTGTCGACAGACCGTCGAGATTAGAAAATGGTACCAGCATTTTCGGAGGTTCTCTAACTAGTATGGATTGCGGTGTCTTCACTGTGCTGCGGCTACCCATCGCCTGAAATCCAGCTGGTGTCAAGCCATCCCCTCTCCGGGACGCCGCATGTAGTGAAACATATACGTTGCACGGGTTCACCGCGGTCCGTTCTGAGTCGACCAAGGACACAATCGAGCTCCGATCCGTACCCTCGACAAACTTGTACCCGACCCCCGGAGCTTGCCAGCTCCTCGGGTATCATGGAGCCTGTGGTTCATCGCGTCCGATATCAAACTTCGTCATGATAAAGTCCCCCCCTCGGGAGTACCAGAGAAGATGACTACTGAGTTGTGCGAT"
+
+
+re.findall(r'(A.TAAT)|(GC[AG][AT]TG)', string7)
+```
+

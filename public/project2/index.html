@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Diana Tran" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 2: Modeling, Testing, Predicting</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project2/">Project 2: Modeling, Testing, Predicting</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<pre class="r"><code>library(tidyverse)
+library(tidyr)</code></pre>
+<blockquote>
+<h3 id="introduction">Introduction</h3>
+<p><em>The dataset I chose for this project is comprised of the nutrition data on 77 different cereal products. It includes the name of the cereal, the manufactuerer of the cereal (A= American Home Good Products, G= General Mills, K = Kelloggs, N= Nabisco, P = Post, Q = Quaker Oats, R = Ralston purina), the type (C= cold, H = hot), the calories (per serving), the grams of protein,milligrams of sodium, grams of dietary fiber, grams of complex carbohydrates, the grams of sugar, milligrams of potassium, vitamins (percentage of FDA recommended), display shelf, wieght in ounces in one serving, cups in one serving, and lastly the rating of the cereal.</em></p>
+</blockquote>
+<pre class="r"><code>cereal &lt;- read.csv(&quot;~/Downloads/cereal.csv&quot;)
+cereal &lt;- cereal %&gt;% mutate(y = ifelse(type == &quot;C&quot;, 1, 0))</code></pre>
+<p><em>1. A MANOVA test was performed to determine the effect of manufacturer (mfr) on 10 numeric variables (calories,sugars, protein,fat,sodium, fiber,carbo, potass,vitamins,and rating). According to the test, there were significant differences in the numerical variables that differed across the manufacturers.Next, a univariate ANOVA was performed for each dependent variable as follow-up tests to the MANOVA, using the Bonferroni method for controlling Type 1 error rates for multiple comparrisons and the test proved that 2 of the 10 variables, sodium and rating, were dependent on the manufacturer.Post hoc analysis was performed to conduct pairwise t-tests on each dependent variable and found that the manufacturers were found to differ significantly from each other in terms of sodium and rating after adjusting for multiple comparisons (bonferroni). It is most unprobable that the data met all the assumptions for a MANOVA test, with the multivariate normality being a high variable across the dependent variables, but according to the covariance matrices there is somewhat equal variance occuring in this particular dataset.</em></p>
+<pre class="r"><code>man1 &lt;- manova(cbind(calories, sugars, protein, fat, sodium, 
+    fiber, carbo, potass, vitamins, rating) ~ mfr, data = cereal)
+summary(man1, tol = 0)</code></pre>
+<pre><code>##           Df Pillai approx F num Df den Df    Pr(&gt;F)    
+## mfr        6 1.7478   2.7128     60    396 4.068e-09 ***
+## Residuals 70                                            
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man1, tol = 0)</code></pre>
+<pre><code>##  Response calories :
+##             Df  Sum Sq Mean Sq F value  Pr(&gt;F)  
+## mfr          6  4709.8  784.96   2.276 0.04593 *
+## Residuals   70 24142.2  344.89                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response sugars :
+##             Df  Sum Sq Mean Sq F value  Pr(&gt;F)  
+## mfr          6  262.16  43.694  2.4678 0.03188 *
+## Residuals   70 1239.37  17.705                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response protein :
+##             Df Sum Sq Mean Sq F value Pr(&gt;F)
+## mfr          6  4.170 0.69504  0.5597 0.7608
+## Residuals   70 86.921 1.24172               
+## 
+##  Response fat :
+##             Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## mfr          6 15.696 2.61594  2.9876 0.01175 *
+## Residuals   70 61.291 0.87559                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response sodium :
+##             Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## mfr          6 206474   34412  7.3521 4.054e-06 ***
+## Residuals   70 327643    4681                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response fiber :
+##             Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## mfr          6  59.50  9.9174  1.8651 0.09907 .
+## Residuals   70 372.21  5.3173                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response carbo :
+##             Df  Sum Sq Mean Sq F value  Pr(&gt;F)  
+## mfr          6  280.12  46.686  2.9405 0.01286 *
+## Residuals   70 1111.40  15.877                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response potass :
+##             Df Sum Sq Mean Sq F value Pr(&gt;F)
+## mfr          6  14331  2388.5  0.4496 0.8429
+## Residuals   70 371886  5312.7               
+## 
+##  Response vitamins :
+##             Df  Sum Sq Mean Sq F value  Pr(&gt;F)  
+## mfr          6  6607.2 1101.20  2.4603 0.03234 *
+## Residuals   70 31331.1  447.59                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response rating :
+##             Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## mfr          6 5524.1  920.69  6.8036 1.032e-05 ***
+## Residuals   70 9472.7  135.32                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>cereal %&gt;% group_by(mfr) %&gt;% summarize(mean(calories), mean(protein), 
+    mean(fat), mean(sodium), mean(fiber), mean(carbo), mean(sugars), 
+    mean(potass), mean(vitamins), mean(rating))</code></pre>
+<pre><code>## # A tibble: 7 x 11
+##   mfr   `mean(calories)` `mean(protein)` `mean(fat)` `mean(sodium)`
+##   &lt;fct&gt;            &lt;dbl&gt;           &lt;dbl&gt;       &lt;dbl&gt;          &lt;dbl&gt;
+## 1 A                100              4          1                0  
+## 2 G                111.             2.32       1.36           200. 
+## 3 K                109.             2.65       0.609          175. 
+## 4 N                 86.7            2.83       0.167           37.5
+## 5 P                109.             2.44       0.889          146. 
+## 6 Q                 95              2.62       1.75            92.5
+## 7 R                115              2.5        1.25           198. 
+## # … with 6 more variables: `mean(fiber)` &lt;dbl&gt;, `mean(carbo)` &lt;dbl&gt;,
+## #   `mean(sugars)` &lt;dbl&gt;, `mean(potass)` &lt;dbl&gt;, `mean(vitamins)` &lt;dbl&gt;,
+## #   `mean(rating)` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$calories, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$calories and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$sugars, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$sugars and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$rating, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$rating and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$sodium, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$sodium and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$carbo, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$carbo and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$fat, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$fat and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$protein, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$protein and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$potass, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$potass and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$vitamins, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$vitamins and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<pre class="r"><code>glimpse(pairwise.t.test(cereal$fiber, cereal$mfr), p.adj = &quot;bonferroni&quot;)</code></pre>
+<pre><code>## List of 4
+##  $ method         : chr &quot;t tests with pooled SD&quot;
+##  $ data.name      : chr &quot;cereal$fiber and cereal$mfr&quot;
+##  $ p.value        : num [1:6, 1:6] NA NA NA NA NA NA NA NA NA NA ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:6] &quot;G&quot; &quot;K&quot; &quot;N&quot; &quot;P&quot; ...
+##   .. ..$ : chr [1:6] &quot;A&quot; &quot;G&quot; &quot;K&quot; &quot;N&quot; ...
+##  $ p.adjust.method: chr &quot;holm&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;pairwise.htest&quot;</code></pre>
+<p><em>2. The null hypothesis: For amount of sugar, calories, and rating, the means of each manufacturer are equal. The alternative hypothesis: For at least one DV, at least one manufactuerer mean is different. Since the p-value is 0.004, which is less than alpha (0.05), we can reject the null hypothesis and accept the alternative hypthesis. The results of the randomization test, PERMANOVA, indicate that the manufacturers do vary with regard to the 6 numerical variables.</em></p>
+<pre class="r"><code>library(vegan)
+cereal1 &lt;- cereal %&gt;% select(-name, -type, -y, -weight, -cups, 
+    -shelf, -sugars, -fat, -fiber, -protein) %&gt;% na.omit()
+dist &lt;- vegdist(sqrt(cereal1[, -c(1)]), method = &quot;bray&quot;, na.rm = TRUE)
+distA &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;A&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+distG &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;G&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+distK &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;K&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+distN &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;N&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+distP &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;P&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+distQ &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;Q&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+distR &lt;- vegdist(sqrt(cereal1[cereal1$mfr == &quot;R&quot;, -c(0)]), method = &quot;bray&quot;, 
+    na.rm = TRUE)
+
+SSR &lt;- sum(distA^2)/1 + sum(distG^1)/22 + sum(distK^2)/23 + sum(distN^2)/6 + 
+    sum(distP^2)/9 + sum(distQ^2)/8 + sum(distR^2)/8
+
+SST &lt;- sum(dist^2)/77
+Fstat &lt;- (SST - SSR)/(SSR/70)
+Fstat</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code>perm.sampdist &lt;- replicate(5000, {
+    new &lt;- cereal1
+    new$mfr &lt;- sample(cereal1$mfr)
+    dist &lt;- vegdist(sqrt(new[, -c(1)]), method = &quot;bray&quot;, na.rm = TRUE)
+    distA &lt;- vegdist(sqrt(new[new$mfr == &quot;A&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    distG &lt;- vegdist(sqrt(new[new$mfr == &quot;G&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    distK &lt;- vegdist(sqrt(new[new$mfr == &quot;K&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    distN &lt;- vegdist(sqrt(new[new$mfr == &quot;N&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    distP &lt;- vegdist(sqrt(new[new$mfr == &quot;P&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    distQ &lt;- vegdist(sqrt(new[new$mfr == &quot;Q&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    distR &lt;- vegdist(sqrt(new[new$mfr == &quot;R&quot;, -c(1)]), method = &quot;bray&quot;, 
+        na.rm = TRUE)
+    
+    SSR &lt;- sum(distA^2)/1 + sum(distG^1)/22 + sum(distK^2)/23 + 
+        sum(distN^2)/6 + sum(distP^2)/9 + sum(distQ^2)/8 + sum(distR^2)/8
+    
+    SST &lt;- sum(dist^2)/77
+})
+
+mean(perm.sampdist &gt; Fstat)</code></pre>
+<pre class="r"><code>adonis(dist ~ mfr, data = cereal1, method = &quot;bray&quot;)</code></pre>
+<pre><code>## 
+## Call:
+## adonis(formula = dist ~ mfr, data = cereal1, method = &quot;bray&quot;) 
+## 
+## Permutation: free
+## Number of permutations: 999
+## 
+## Terms added sequentially (first to last)
+## 
+##           Df SumsOfSqs  MeanSqs F.Model      R2 Pr(&gt;F)    
+## mfr        6   0.43501 0.072501  6.3889 0.35385  0.001 ***
+## Residuals 70   0.79436 0.011348         0.64615           
+## Total     76   1.22936                  1.00000           
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code># SSR &lt;-sum(distA^2)/1 + sum(distG^1)/22 + sum(distK^2)/23+
+# sum(distN^2)/6 + sum(distP^2)/9 + sum(distQ^2)/8 +
+# sum(distR^2)/8
+
+# SST &lt;- sum(dist^2)/77
+SST &lt;- sum(dist^2)/77
+SSW &lt;- cereal1 %&gt;% group_by(mfr) %&gt;% select(sodium, rating, calories) %&gt;% 
+    do(d = dist(.[2:2], &quot;euclidean&quot;)) %&gt;% ungroup() %&gt;% summarize(sum(unlist(d)))</code></pre>
+<p><em>3. The coefficient estimates determine a predicted sodium amount decreasing at -12.09325 across all of the manufacturers. Manufacturer R had an amount of sodium 224.47 more than manufacturer A. Given a manufacturer with an average centered caloric value, then the predicted amount of sodium would be 1.757 milligrams less than the average amount of sodium from cereal made by manufacturer A. The proportion of the variation in the outcome that the model explains is approximately .464. When comparing the model with no interactions to the model with interactions and the null model, the differences were proven to be significant via the likelihood ratio test.The robust standard errors produced returns with data that was more significant than the original linear regression model. </em></p>
+<pre class="r"><code>cereal %&gt;% summarize(mean(calories), na.rm = TRUE)</code></pre>
+<pre><code>##   mean(calories) na.rm
+## 1       106.8831  TRUE</code></pre>
+<pre class="r"><code>glimpse(data.frame(mc_calories = cereal$calories - mean(cereal$calories), 
+    na.rm = TRUE))</code></pre>
+<pre><code>## Observations: 77
+## Variables: 2
+## $ mc_calories &lt;dbl&gt; -36.883117, 13.116883, -36.883117, -56.883117, 3.116883, …
+## $ na.rm       &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…</code></pre>
+<pre class="r"><code>cereal$mc_calories &lt;- cereal$calories - mean(cereal$calories, 
+    na.rm = TRUE)
+
+fit3 &lt;- lm(sodium ~ mfr * mc_calories, data = cereal)
+glimpse(summary(fit3))</code></pre>
+<pre><code>## List of 11
+##  $ call         : language lm(formula = sodium ~ mfr * mc_calories, data = cereal)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language sodium ~ mfr * mc_calories
+##   .. ..- attr(*, &quot;variables&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:3, 1:3] 0 1 0 0 0 1 0 1 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:3] &quot;mfr&quot; &quot;mc_calories&quot; &quot;mfr:mc_calories&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int [1:3] 1 1 2
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:3] &quot;numeric&quot; &quot;factor&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;sodium&quot; &quot;mfr&quot; &quot;mc_calories&quot;
+##  $ residuals    : Named num [1:77] 59.69 -130.83 94.28 -21.04 -6.91 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:77] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ coefficients : num [1:13, 1:4] -12.09 211.78 186.45 9.79 158.74 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:4] &quot;Estimate&quot; &quot;Std. Error&quot; &quot;t value&quot; &quot;Pr(&gt;|t|)&quot;
+##  $ aliased      : Named logi [1:14] FALSE FALSE FALSE FALSE FALSE FALSE ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:14] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  $ sigma        : num 66.9
+##  $ df           : int [1:3] 13 64 14
+##  $ r.squared    : num 0.464
+##  $ adj.r.squared: num 0.363
+##  $ fstatistic   : Named num [1:3] 4.61 12 64
+##   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;value&quot; &quot;numdf&quot; &quot;dendf&quot;
+##  $ cov.unscaled : num [1:13, 1:13] 1.01 -1.01 -1.01 -1.01 -1.01 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  - attr(*, &quot;class&quot;)= chr &quot;summary.lm&quot;</code></pre>
+<pre class="r"><code>ggplot(cereal, aes(x = sodium, y = mc_calories, color = mfr)) + 
+    geom_point() + stat_smooth(method = &quot;lm&quot;, se = FALSE, fullrange = TRUE)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(fit3, aes(sodium, mc_calories)) + geom_point() + geom_smooth(method = &quot;lm&quot;, 
+    se = FALSE)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>resids &lt;- fit3$residuals
+fitvalue &lt;- fit3$fitted.values
+ggplot() + geom_point(aes(fitvalue, resids)) + geom_hline(yintercept = 0, 
+    color = &quot;purple&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-14-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot() + geom_histogram(aes(resids), bins = 20)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot() + geom_qq(aes(sample = resids))</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-15-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>library(lmtest)
+library(sandwich)
+coeftest(fit3, vcov = vcovHC(fit3))</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                   Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)      -12.09325         NA      NA       NA
+## mfrG             211.78151         NA      NA       NA
+## mfrK             186.45139         NA      NA       NA
+## mfrN               9.79212         NA      NA       NA
+## mfrP             158.74342         NA      NA       NA
+## mfrQ             129.94390         NA      NA       NA
+## mfrR             224.47917         NA      NA       NA
+## mc_calories       -1.75694         NA      NA       NA
+## mfrG:mc_calories   1.92797         NA      NA       NA
+## mfrK:mc_calories   1.99113         NA      NA       NA
+## mfrN:mc_calories  -0.21181         NA      NA       NA
+## mfrP:mc_calories   1.48819         NA      NA       NA
+## mfrQ:mc_calories   3.89028         NA      NA       NA</code></pre>
+<pre class="r"><code>glimpse(fit3 %&gt;% summary(robust = TRUE))</code></pre>
+<pre><code>## List of 11
+##  $ call         : language lm(formula = sodium ~ mfr * mc_calories, data = cereal)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language sodium ~ mfr * mc_calories
+##   .. ..- attr(*, &quot;variables&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:3, 1:3] 0 1 0 0 0 1 0 1 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:3] &quot;mfr&quot; &quot;mc_calories&quot; &quot;mfr:mc_calories&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int [1:3] 1 1 2
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:3] &quot;numeric&quot; &quot;factor&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;sodium&quot; &quot;mfr&quot; &quot;mc_calories&quot;
+##  $ residuals    : Named num [1:77] 59.69 -130.83 94.28 -21.04 -6.91 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:77] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ coefficients : num [1:13, 1:4] -12.09 211.78 186.45 9.79 158.74 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:4] &quot;Estimate&quot; &quot;Std. Error&quot; &quot;t value&quot; &quot;Pr(&gt;|t|)&quot;
+##  $ aliased      : Named logi [1:14] FALSE FALSE FALSE FALSE FALSE FALSE ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:14] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  $ sigma        : num 66.9
+##  $ df           : int [1:3] 13 64 14
+##  $ r.squared    : num 0.464
+##  $ adj.r.squared: num 0.363
+##  $ fstatistic   : Named num [1:3] 4.61 12 64
+##   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;value&quot; &quot;numdf&quot; &quot;dendf&quot;
+##  $ cov.unscaled : num [1:13, 1:13] 1.01 -1.01 -1.01 -1.01 -1.01 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  - attr(*, &quot;class&quot;)= chr &quot;summary.lm&quot;</code></pre>
+<pre class="r"><code>glimpse(summary(fit3))</code></pre>
+<pre><code>## List of 11
+##  $ call         : language lm(formula = sodium ~ mfr * mc_calories, data = cereal)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language sodium ~ mfr * mc_calories
+##   .. ..- attr(*, &quot;variables&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:3, 1:3] 0 1 0 0 0 1 0 1 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:3] &quot;mfr&quot; &quot;mc_calories&quot; &quot;mfr:mc_calories&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int [1:3] 1 1 2
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:3] &quot;numeric&quot; &quot;factor&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;sodium&quot; &quot;mfr&quot; &quot;mc_calories&quot;
+##  $ residuals    : Named num [1:77] 59.69 -130.83 94.28 -21.04 -6.91 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:77] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ coefficients : num [1:13, 1:4] -12.09 211.78 186.45 9.79 158.74 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:4] &quot;Estimate&quot; &quot;Std. Error&quot; &quot;t value&quot; &quot;Pr(&gt;|t|)&quot;
+##  $ aliased      : Named logi [1:14] FALSE FALSE FALSE FALSE FALSE FALSE ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:14] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  $ sigma        : num 66.9
+##  $ df           : int [1:3] 13 64 14
+##  $ r.squared    : num 0.464
+##  $ adj.r.squared: num 0.363
+##  $ fstatistic   : Named num [1:3] 4.61 12 64
+##   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;value&quot; &quot;numdf&quot; &quot;dendf&quot;
+##  $ cov.unscaled : num [1:13, 1:13] 1.01 -1.01 -1.01 -1.01 -1.01 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  - attr(*, &quot;class&quot;)= chr &quot;summary.lm&quot;</code></pre>
+<pre class="r"><code>fit3a &lt;- lm(rating ~ sodium + mc_calories, data = cereal)
+glimpse(summary(fit3a))</code></pre>
+<pre><code>## List of 11
+##  $ call         : language lm(formula = rating ~ sodium + mc_calories, data = cereal)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language rating ~ sodium + mc_calories
+##   .. ..- attr(*, &quot;variables&quot;)= language list(rating, sodium, mc_calories)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:3, 1:2] 0 1 0 0 0 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:2] &quot;sodium&quot; &quot;mc_calories&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int [1:2] 1 1
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(rating, sodium, mc_calories)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:3] &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;rating&quot; &quot;sodium&quot; &quot;mc_calories&quot;
+##  $ residuals    : Named num [1:77] 8.05 -7.94 3.72 24.69 -5.43 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:77] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ coefficients : num [1:3, 1:4] 48.3732 -0.0357 -0.4508 2.5324 0.0142 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:3] &quot;(Intercept)&quot; &quot;sodium&quot; &quot;mc_calories&quot;
+##   .. ..$ : chr [1:4] &quot;Estimate&quot; &quot;Std. Error&quot; &quot;t value&quot; &quot;Pr(&gt;|t|)&quot;
+##  $ aliased      : Named logi [1:3] FALSE FALSE FALSE
+##   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;(Intercept)&quot; &quot;sodium&quot; &quot;mc_calories&quot;
+##  $ sigma        : num 9.9
+##  $ df           : int [1:3] 3 74 3
+##  $ r.squared    : num 0.517
+##  $ adj.r.squared: num 0.504
+##  $ fstatistic   : Named num [1:3] 39.5 2 74
+##   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;value&quot; &quot;numdf&quot; &quot;dendf&quot;
+##  $ cov.unscaled : num [1:3, 1:3] 6.55e-02 -3.29e-04 4.25e-04 -3.29e-04 2.06e-06 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:3] &quot;(Intercept)&quot; &quot;sodium&quot; &quot;mc_calories&quot;
+##   .. ..$ : chr [1:3] &quot;(Intercept)&quot; &quot;sodium&quot; &quot;mc_calories&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;summary.lm&quot;</code></pre>
+<pre class="r"><code>lrtest(fit3a, fit3)</code></pre>
+<pre><code>## Likelihood ratio test
+## 
+## Model 1: rating ~ sodium + mc_calories
+## Model 2: sodium ~ mfr * mc_calories
+##   #Df  LogLik Df Chisq Pr(&gt;Chisq)    
+## 1   4 -284.23                        
+## 2  14 -425.78 10 283.1  &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>lrtest(fit3a)</code></pre>
+<pre><code>## Likelihood ratio test
+## 
+## Model 1: rating ~ sodium + mc_calories
+## Model 2: rating ~ 1
+##   #Df  LogLik Df  Chisq Pr(&gt;Chisq)    
+## 1   4 -284.23                         
+## 2   2 -312.22 -2 55.977  6.995e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p><em>4. Rerunning the same regresison model(with interaction), but with boostrapped standard errors, the new model has lower SE’s than the original regression model.</em></p>
+<pre class="r"><code>glimpse(summary(fit3))</code></pre>
+<pre><code>## List of 11
+##  $ call         : language lm(formula = sodium ~ mfr * mc_calories, data = cereal)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language sodium ~ mfr * mc_calories
+##   .. ..- attr(*, &quot;variables&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:3, 1:3] 0 1 0 0 0 1 0 1 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:3] &quot;mfr&quot; &quot;mc_calories&quot; &quot;mfr:mc_calories&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int [1:3] 1 1 2
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(sodium, mfr, mc_calories)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:3] &quot;numeric&quot; &quot;factor&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;sodium&quot; &quot;mfr&quot; &quot;mc_calories&quot;
+##  $ residuals    : Named num [1:77] 59.69 -130.83 94.28 -21.04 -6.91 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:77] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ coefficients : num [1:13, 1:4] -12.09 211.78 186.45 9.79 158.74 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:4] &quot;Estimate&quot; &quot;Std. Error&quot; &quot;t value&quot; &quot;Pr(&gt;|t|)&quot;
+##  $ aliased      : Named logi [1:14] FALSE FALSE FALSE FALSE FALSE FALSE ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:14] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  $ sigma        : num 66.9
+##  $ df           : int [1:3] 13 64 14
+##  $ r.squared    : num 0.464
+##  $ adj.r.squared: num 0.363
+##  $ fstatistic   : Named num [1:3] 4.61 12 64
+##   ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;value&quot; &quot;numdf&quot; &quot;dendf&quot;
+##  $ cov.unscaled : num [1:13, 1:13] 1.01 -1.01 -1.01 -1.01 -1.01 ...
+##   ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##   .. ..$ : chr [1:13] &quot;(Intercept)&quot; &quot;mfrG&quot; &quot;mfrK&quot; &quot;mfrN&quot; ...
+##  - attr(*, &quot;class&quot;)= chr &quot;summary.lm&quot;</code></pre>
+<pre class="r"><code>coeftest(fit3, vcov = vcovHC(fit3))[, 1:2]</code></pre>
+<pre><code>##                     Estimate Std. Error
+## (Intercept)      -12.0932540        NaN
+## mfrG             211.7815134        NaN
+## mfrK             186.4513898        NaN
+## mfrN               9.7921176        NaN
+## mfrP             158.7434163        NaN
+## mfrQ             129.9439033        NaN
+## mfrR             224.4791667        NaN
+## mc_calories       -1.7569444        NaN
+## mfrG:mc_calories   1.9279706        NaN
+## mfrK:mc_calories   1.9911318        NaN
+## mfrN:mc_calories  -0.2118056        NaN
+## mfrP:mc_calories   1.4881944        NaN
+## mfrQ:mc_calories   3.8902778        NaN</code></pre>
+<pre class="r"><code>library(lmtest)
+library(sandwich)
+set.seed(348)
+boot_dat &lt;- cereal[sample(nrow(cereal), replace = TRUE), ]
+samp_distv &lt;- replicate(1000, {
+    boot_dat &lt;- cereal[sample(nrow(cereal), replace = TRUE), 
+        ]
+    fit4 &lt;- lm(sodium ~ mfr * mc_calories, data = boot_dat)
+    coeftest(fit4)
+})
+
+do.call(rbind, lapply(samp_distv, unlist)) %&gt;% as.data.frame %&gt;% 
+    summarize_all(sd, na.rm = TRUE)</code></pre>
+<pre><code>##   Estimate Std. Error t value  Pr(&gt;|t|)
+## 1 100.8679   31.90737 3.11784 0.3203967</code></pre>
+<p><em>5. Per the logistic regression, the intercept of the coefficient test corresponds with the log odds of the probability of being classified as a cold cereal. The calories per serving suggest that for every 1 unit increase, the log odds of the probability of being a cold cereal decreases by 0.04540787. For every 1 unit increase in the rating, the log odds of probability of being classified as a cold cereal decreases by 0.10825584. However, the estimates were not statistically significant predictors of whether a cereal is classified as cold or not. The accuracy of the model was good, with it correctly classifying whether a cereal was cold or not 81% of the time. The TPR was .959, a great score, predicting true positives correctly 95.9% of the time. Conversely, the model was bad at predicting the true negatives, classifying them correctly 0% of the time. Considering PPV, or recall, the model was again great with 96% of the cereals classified as cold actually being cold. The calculated AUC was 0.7995, a fair value for preidcing whether a cereal is classified as cold or not, so calorie count and ratings are somewhat significant predictors, but not the most accurate. Using the 10 fold cross validation method, the out of sample values for accuracy and sensitivity were greater, suggesting that this model method were better at classifying whether or not a cereal is cold- and with a better true positive rate, classifying more cold cereals correctly. Neither the model nor the 10 fold cross validation returned a true negative rate, however for the 10 fold cv, the ppv was lower. The AUC for the 10 fold cv model was considerably higher( at 1 compared to the previous at .8), which may suggest that this model is just as/ if not more accurate than the previous at correctly classifying the cereals in their correct categories.</em></p>
+<pre class="r"><code>odds &lt;- function(p) p/(1 - p)
+p &lt;- seq(0, 1, by = 0.1)
+cbind(p, odds = odds(p)) %&gt;% round(4)</code></pre>
+<pre><code>##         p   odds
+##  [1,] 0.0 0.0000
+##  [2,] 0.1 0.1111
+##  [3,] 0.2 0.2500
+##  [4,] 0.3 0.4286
+##  [5,] 0.4 0.6667
+##  [6,] 0.5 1.0000
+##  [7,] 0.6 1.5000
+##  [8,] 0.7 2.3333
+##  [9,] 0.8 4.0000
+## [10,] 0.9 9.0000
+## [11,] 1.0    Inf</code></pre>
+<pre class="r"><code>logit &lt;- function(p) log(odds(p))
+fit5 &lt;- glm(y ~ calories + rating, data = cereal, family = binomial(link = logit))
+coef(fit5)</code></pre>
+<pre><code>## (Intercept)    calories      rating 
+## 13.24599710 -0.04540787 -0.10825584</code></pre>
+<pre class="r"><code>exp(coef(fit5))</code></pre>
+<pre><code>##  (Intercept)     calories       rating 
+## 5.658007e+05 9.556076e-01 8.973980e-01</code></pre>
+<pre class="r"><code>logistic &lt;- function(x) {
+    exp(x)/(1 + ex(x))
+}
+pca1 &lt;- princomp(cereal[c(&quot;y&quot;, &quot;calories&quot;, &quot;rating&quot;)])
+cereal$predictor &lt;- pca1$scores[, 1]
+fit5a &lt;- glm(y ~ predictor, data = cereal, family = &quot;binomial&quot;)
+cereal$prob &lt;- predict(fit5a, type = &quot;response&quot;)
+table(predict = as.numeric(cereal$prob &gt; 0.9), truth = cereal$y) %&gt;% 
+    addmargins</code></pre>
+<pre><code>##        truth
+## predict  0  1 Sum
+##     0    0  3   3
+##     1    3 71  74
+##     Sum  3 74  77</code></pre>
+<pre class="r"><code>TPR &lt;- 71/74
+TNR &lt;- 0/3
+PPV &lt;- 71/74
+ACC &lt;- (0 + 71)/77
+
+cereal$logit. &lt;- predict(fit5)
+cereal$y. &lt;- factor(cereal$y, levels = c(1, 0))
+ggplot(cereal, aes(logit., fill = y.)) + geom_density(alpha = 0.4) + 
+    geom_vline(xintercept = 0, lty = 2)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-26-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sens &lt;- function(p, data = cereal, y = y.) mean(cereal[cereal$y. == 
+    1, ]$prob &gt; p)
+
+spec &lt;- function(p, data = cereal, y = y.) mean(cereal[cereal$y. == 
+    0, ]$prob &lt; p)
+
+sensitivity5 &lt;- sapply(seq(0, 1, 0.01), sens, cereal)
+specificity5 &lt;- sapply(seq(0, 1, 0.01), spec, cereal)
+
+ROC &lt;- data.frame(sensitivity5, specificity5, cutoff = seq(0, 
+    1, 0.01))
+
+ROC %&gt;% gather(key, rate, -cutoff) %&gt;% ggplot(aes(cutoff, rate, 
+    color = key)) + geom_path() + geom_vline(xintercept = c(0.1, 
+    0.1, 0.9), lty = 2, color = &quot;gray30&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-27-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ROC$TPR5 &lt;- rev(sensitivity5)
+ROC$FPR5 &lt;- rev(1 - specificity5)
+ROC %&gt;% ggplot(aes(FPR5, TPR5)) + geom_path(size = 1) + geom_segment(aes(x = 0, 
+    y = 0, xend = 1, yend = 1), lty = 2) + scale_x_continuous(limits = c(0, 
+    1))</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-28-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>widths5 &lt;- diff(ROC$FPR5)
+heights5 &lt;- vector()
+for (i in 1:100) heights5[i] &lt;- ROC$TPR5[i] + ROC$TPR5[i + 1]
+AUC5 &lt;- sum(heights5 * widths5/2)
+AUC5 %&gt;% round(4)</code></pre>
+<pre><code>## [1] 0.7995</code></pre>
+<pre class="r"><code>cereal5 &lt;- cereal %&gt;% select(-predictor, -prob, -logit., -y.)
+prob &lt;- predict(fit5a, type = &quot;response&quot;)
+class_diag &lt;- function(probs, truth) {
+    tab &lt;- table(factor(probs &gt; 0.5, levels = c(&quot;FALSE&quot;, &quot;TRUE&quot;)), 
+        truth)
+    acc = sum(diag(tab))/sum(tab)
+    sens = tab[2, 2]/colSums(tab)[2]
+    spec = tab[1, 1]/colSums(tab)[1]
+    ppv = tab[2, 2]/rowSums(tab)[2]
+    if (is.numeric(truth) == FALSE &amp; is.logical(truth) == FALSE) 
+        truth &lt;- as.numeric(truth) - 1
+    ord &lt;- order(probs, decreasing = TRUE)
+    probs &lt;- probs[ord]
+    truth &lt;- truth[ord]
+    TPR = cumsum(truth)/max(1, sum(truth))
+    FPR = cumsum(!truth)/max(1, sum(!truth))
+    dup &lt;- c(probs[-1] &gt; probs[-length(probs)], FALSE)
+    TPR &lt;- c(0, TPR[!dup], 1)
+    FPR &lt;- c(0, FPR[!dup], 1)
+    n &lt;- length(TPR)
+    auc &lt;- sum(((TPR[-1] + TPR[-n])/2) * (FPR[-1] - FPR[-n]))
+    data.frame(acc, sens, spec, spec, ppv, auc)
+    
+}
+
+class_diag(prob, cereal$y)</code></pre>
+<pre><code>##        acc sens spec spec.1      ppv       auc
+## 1 0.961039    1    0      0 0.961039 0.8063063</code></pre>
+<pre class="r"><code>library(pROC)
+set.seed(1234)
+k = 10
+
+data5 &lt;- cereal[sample(nrow(cereal)), ]
+folds &lt;- cut(seq(1:nrow(cereal)), breaks = k, labels = F)
+diags &lt;- NULL
+
+for (i in 1:k) {
+    train &lt;- data5[folds != i, ]
+    test &lt;- data5[folds == i, ]
+    truth = test$y
+    fit5b &lt;- glm(y ~ calories + rating, data = train, family = &quot;binomial&quot;)
+    probs &lt;- predict(fit5b, newdata = test, type = &quot;response&quot;)
+    diags &lt;- rbind(diags, class_diag(truth, probs))
+    
+}
+
+
+
+apply(diags, 2, mean)</code></pre>
+<pre><code>##       acc      sens      spec    spec.1       ppv       auc 
+## 0.1053571 0.8000000 0.0000000 0.0000000 0.1071429 1.0000000</code></pre>
+<p><em>6. Based on the Lasso regression that was performed, there was no variable that was the most important predictor of whether a cereal is considered hot or cold. This would make sense as this is something that is something that nutritional value/rating would affect and non of the variables were retained. </em></p>
+<pre class="r"><code>library(glmnet)
+library(Matrix)
+df = subset(cereal, select = -c(shelf, weight, cups, name, type, 
+    mfr))
+df &lt;- as.vector(df)
+
+fit6 &lt;- lm(y ~ ., data = df)
+yhat &lt;- predict(fit6)
+mean((df$y - yhat)^2)</code></pre>
+<pre><code>## [1] 9.663866e-31</code></pre>
+<pre class="r"><code>set.seed(1234)
+k = 10
+data6 &lt;- df[sample(nrow(df)), ]
+folds &lt;- cut(seq(1:nrow(df)), breaks = k, labels = F)
+diags &lt;- NULL
+
+
+for (i in 1:k) {
+    
+    train &lt;- data6[folds != i, ]
+    test &lt;- data6[folds == i, ]
+    fit6 &lt;- lm(y ~ ., data = train)
+    yhat &lt;- predict(fit6, newdata = test)
+    diags &lt;- mean((test$y - yhat)^2)
+    
+}
+
+mean(diags)</code></pre>
+<pre><code>## [1] 9.583427e-31</code></pre>
+<pre class="r"><code>y &lt;- data.matrix(df$y)
+x &lt;- df %&gt;% dplyr::select(-y) %&gt;% data.matrix
+
+cv &lt;- cv.glmnet(x, y, family = &quot;binomial&quot;)
+lasso1 &lt;- glmnet(x, y, family = &quot;binomial&quot;, lambda = cv$lambda.1se)
+coef(lasso1)</code></pre>
+<pre><code>## 16 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##             s0
+## (Intercept)  .
+## calories     0
+## protein      .
+## fat          .
+## sodium       .
+## fiber        .
+## carbo        .
+## sugars       .
+## potass       .
+## vitamins     .
+## rating       .
+## mc_calories  .
+## predictor    .
+## prob         .
+## logit.       .
+## y.           .</code></pre>
+<pre class="r"><code>set.seed(1234)
+k = 10
+data6 &lt;- df[sample(nrow(df)), ]
+folds &lt;- cut(seq(1:nrow(df)), breaks = k, labels = F)
+diags &lt;- NULL
+
+
+for (i in 1:k) {
+    
+    train &lt;- data6[folds != i, ]
+    test &lt;- data6[folds == i, ]
+    fit6a &lt;- lm(y ~ protein + fat + sodium + fiber + carbo + 
+        potass + vitamins + rating, data = train)
+    yhat &lt;- predict(fit6a, newdata = test)
+    diags &lt;- mean((test$y - yhat)^2)
+    
+}
+
+mean(diags)</code></pre>
+<pre><code>## [1] 0.1063959</code></pre>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

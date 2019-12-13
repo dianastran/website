@@ -1,0 +1,158 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "Diana Tran dst638"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, fig.width=8,tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+> ### Introduction 
+The first dataset included in this project includes gender gap information by nation- the countries were ranked/scored via reports from the World Economic Forum (links to each were included as a column in the dataset). The rankings were out of 142 countries from information that was collected in 2014, and the overall scores are based ona scale from 0.0 to 1.00, 0.0 = inequality up to 1.00 = equality. There were three basic concepts underlying the Global Gender Gap Index: measuring gaps rather than levels, capturing gaps in outcome variables rather than input variables, and lastly ranking countries according to gender equality rather than women's empowerment. The index examines the gap between men and women in four fundamental categories: economic participation and opportunity, educational attainment, health and survival and political empowerment. All of the data was presented in female/male ratio. 
+  The second dataset included in this project is titled "Percentage of citizenry obese, by nation" and it includes the total percentage of a nation's obese population as well as separation between male and female percentages.Overall, I was curious to know if there was a correlation between gender gap disparities and obesity rates in the corresponding nations. Both datsets were found via data.world. I expect to see some sort of association for perhaps more developed countries to have higher equalities scores and lower obesity percentages, based on access to better education and opportunities.
+
+```{r}
+library(tidyverse)
+library(tidyr)
+```
+
+```{r}
+
+obesity <- read.csv("~/Downloads/obese.csv")
+gendergap <-read.csv("~/Downloads/gender.csv")
+obesity <-obesity %>% rename(ob.total = value)
+head(obesity)
+head(gendergap)%>% glimpse()
+```
+
+
+```{r}
+
+gendergap <- gendergap %>% rename (overallrank = Overall...Rank, overallscore = Overall...Score, econpart.opp.rank = Economic.Participation.and.Opportunity...Rank, econpart.opp.score = Economic.Participation.and.Opportunity...Score, edu.attain.rank = Educational.Attainment...Rank, edu.attain.score = Educational.Attainment...Score, healthsurvivalrank= Health.and.Survival...Rank, healthsurvivalscore = Health.and.Survival...Score, polemp.rank = Political.Empowerment...Rank, polemp.score= Political.Empowerment...Score)
+```
+
+
+
+>Joining
+
+*The datasets were collected based on country, so that's what I decided to join them by. I felt that a full_join was the best function because I wanted to return the countries that appeared in both datasets and I wanted to keep all the variables from both sets. I also decided to remove columns 16 and 17 from the final dataset as I felt they were extraneous, they originally included links to the country's respective flag and the links to how the gender gap scores were calculated/sourced.* 
+
+```{r}
+fullset <- obesity %>% full_join(gendergap, by= "Country") 
+fullset %>% dim()
+fullset <- fullset %>% na.omit()
+fullset %>% dim()
+195-126
+fullset [16:17] <- list(NULL)
+
+```
+>Wrangling
+
+*First, the data was filtered based on the variable ‘Income.Group’, more specifically those with the high income (“1 (High Income)), and the results only included 45 countries out of the 126 from the full dataset. Second, the data was arranged via overall rank and the country with the lowest rank was Jordan, who had a considerably high obesity percentage for both males and females. Third, the specific variables were selected for observation, including the country, obesity percentage value and the income group, and from a skim over the results there didn’t seem to be a clear association between income group and obesity rate. Next, I made a new categorical variable based on the obesity percentage values, where values greater the 20 were labeled high, values between 20 and 10 were labeled medium, and values less than 10 were considered low (this was just from a numerically objective perspective since I know population sizes vary greatly.) Next, the data was grouped by country as to compare the  income groups, economic participation/opportunity and educational attainment ranks. Lastly, the data was manipulated to find the mean values of the obesity percentages (total, female, and male) and it was interesting to see that overall that the female’s had a greater obesity percentage than the males. *
+
+```{r}
+#1
+fullset %>% filter(Income.Group == "1 (High Income)") %>% glimpse()
+```
+
+
+
+```{r}
+#2
+fullset %>% arrange(overallrank)%>% glimpse()
+```
+```{r}
+#3
+fullset %>% select(Country, ob.total, Income.Group) %>% glimpse()
+```
+
+
+```{r}
+#4
+fullset <- fullset %>% mutate(obesity_rank = case_when(ob.total >20 ~ "high", 10 <= ob.total & ob.total <= 20 ~ "medium", ob.total <10 ~ "low" ))
+```
+
+
+```{r}
+#5 
+fullset %>% group_by(Country) %>% select(Income.Group,econpart.opp.rank, edu.attain.rank) %>% glimpse()
+```
+
+
+
+```{r}
+#6
+fullset %>% summarize (mean(ob.total), mean(Female), mean(Male))
+```
+
+
+```{r}
+#summary stastics 
+summary(fullset)
+#value 
+#fullset %>% summary(mean(value), sd(value), n(), quantile()  )
+fullset %>% summarize_if(is.numeric, list(min=min, max = max), na.rm =T)
+fullset %>% summarize_if(is.numeric, list(Q3 = quantile), probs = .75)
+fullset %>% summarize_if(is.numeric, list(sd=sd), na.rm=T )
+fullset %>% summarize_if(is.numeric, list(mean=mean))
+fullset %>% summarize_if(is.numeric,list(var=var))
+fullset %>% select_if(is.numeric) %>% cor %>% glimpse()
+fullset %>% group_by(Income.Group) %>% summarize(count = n(), countavg = count/126)
+fullset %>% group_by(obesity_rank) %>% summarize(count = n(), countavg= count/126)
+fullset %>% group_by(Region) %>% summarize(count = n(), countavg = count/126)
+fullset %>% group_by(Region, Income.Group, obesity_rank) %>% summarize(count= n())
+```
+>Visualizing
+
+  *For the first plot, I was surprised to see that region with the clearest obesity percentage trend was Europe and Central Asia  and Latin America and the Caribbean with a range around 17-27%. Similarly I was also surprised to see that the Middle East and North Africa regions had the higher overall gender gap rankings with a quite spread out range of obesity percentages. The two regions, Asia and the Pacific and Sub-Saharan Africa, also displayed very similar general trends both in terms of the obesity percentage range and gender gap rankings, both were more generally towards the lower end of the obesity percentages with a few outliers with ranging gender gap rakings. It's to associate regions with the same pattern with each other since some are no where close to each other on the map or at least when you think of them in your head. Overall, the Middle East and North Africa region displayed the least variability within the gender gap rankings and the rest of the regions could be grouped by their gender gap ranking/obesity percentage relationship, Asia and the Pacific with Sub-Saharan Africa , and Latin America and the Caribbean with Europe and Cental Asia.*
+  *For the second plot, I felt like for the most part, the economic participation and opportunity scores were pretty high across each income group, or at least there were some from each group that had high scores. It was also cool to see that there wasn't one income group that had a higher economic participation and opporunity score than any other. However, it looks like for the high income group- the obesity percentages had the greatest range from around 16% to 50% and had the highest obesity percentages overall. The low income group was more concentrated around the lower female obesity percentages, which would make sense if you think about the relationship between income and access to food. The proceeding lower range of female obesity belonged to the lower-middle income group and the second highest range belonged to upper-middle income. The highest concentration of income groups looked like it was around 16-23%, where it seemed that each group was present. *
+
+```{r}
+#visualizations
+library(RColorBrewer)
+ggplot(fullset, aes(ob.total, overallrank, color = Region)) + geom_point()+ ggtitle("Overall Gender Gap Ranking vs Total Obesity Percentage by Region") + ylab("Overall Gender Gap Ranking") + xlab("Obesity Percentage") + scale_y_continuous(breaks = seq(0, 150, 10))+ scale_x_continuous(breaks = seq(0, 50,5)) + scale_color_manual(values = c("red", "orange", "yellow", "green", "blue", "purple"))
+
+ggplot(fullset, aes( x=Female , y=econpart.opp.score, fill=Income.Group)) + geom_bar(stat="summary",fun.y ="mean", position= "dodge") + ggtitle("Education Participation and Opporunity Score vs Obesity Percentage by Income Group") + ylab("Economic participation and Opporunity Score") + xlab("Female Obesity Percentage") + scale_x_continuous(breaks = seq(1, 50, 2))
+
+```
+
+
+>Dimensionality Reduction
+
+*Based on the PCA, it was made very clear how much variance was in the dataset. It was interesting to see how the rankings and the scores for most of the variables varied so much from each other, negatively correlated, but it makes the most sense since a higher score (closerb to 1) would mean a better rank ( a lower number). Female obesity, total obesity, and male obesity, showed an understanable correlation with each other. The fact that education attainment rank and health survival rank are the most closely correlated was not something that I had considered but it makes the most sense, again if you are to be in an area with good infrastructure that can provide education, you probably have better chances to take care of your health and survive. The total obesity and overall rank were quite far from each other, which kind of supports my hypothesis, countries with better gender gap ranks would have lower obesity percentages. Economic participation and opportunity (rank and score) most correlated with political empowerment (rank and score), which would also make sense, if you have more opportunities to participate you would feel more empowered to be involved with politics/policies that would in turn affect those economic opportunities and your ability to participate. *
+```{r}
+fullsetnum <- fullset %>% select_if(is.numeric) %>% scale
+rownames(fullsetnum) <- fullset$Name
+fullsetpca <- princomp(fullsetnum)
+names(fullsetpca)
+summary(fullsetpca, loadings =T)
+
+eigval <- fullsetpca$sdev^2
+varprop = round(eigval/sum(eigval),2)
+ggplot()+geom_bar(aes(y=varprop,x=1:13),stat="identity")+xlab("")+geom_path(aes( y=varprop,x=1:13))+ geom_text(aes(x=1:13,y=varprop,label=round(varprop,2)),vjust=1, col="white",size=5)+ scale_y_continuous(breaks=seq(0,.6,.2),labels = scales::percent)+
+scale_x_continuous(breaks=1:10)
+
+
+round(cumsum(eigval)/ sum(eigval), 2)
+eigval
+summary(fullsetpca, loadings = T)
+eigen(cor(fullsetnum))
+
+fullsetdf <- data.frame(PC1=fullsetpca$scores[,1],PC2= fullsetpca$scores[,2])
+ggplot(fullsetdf, aes(PC1, PC2)) +geom_point()
+
+fullsetpca$loadings[1:13, 1:2] %>% as.data.frame %>% rownames_to_column %>% ggplot() + geom_hline(aes(yintercept = 0), lty =2) +
+  geom_vline(aes(xintercept= 0), lty =2) + ylab ("PC2") + xlab("PC1") + geom_segment(aes(x= 0, y= 0, xend = Comp.1, yend = Comp.2), 
+                       arrow= arrow(), col= "purple") + geom_label(aes(x= Comp.1*1.1, y = Comp.2 *1.1, label = rowname))
+
+
+
+
+
+```
+
+
+```
+

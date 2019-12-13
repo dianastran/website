@@ -1,0 +1,1 @@
+"0","cereal %>% group_by(mfr) %>% summarize(mean(calories), mean(protein), mean(fat), mean(sodium), mean(fiber), mean(carbo), mean(sugars), mean(potass), mean(vitamins), mean(rating))"

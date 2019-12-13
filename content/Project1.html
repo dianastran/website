@@ -1,0 +1,489 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "Diana Tran dst638"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+
+<blockquote>
+<h3 id="introduction">Introduction</h3>
+<p>The first dataset included in this project includes gender gap information by nation- the countries were ranked/scored via reports from the World Economic Forum (links to each were included as a column in the dataset). The rankings were out of 142 countries from information that was collected in 2014, and the overall scores are based ona scale from 0.0 to 1.00, 0.0 = inequality up to 1.00 = equality. There were three basic concepts underlying the Global Gender Gap Index: measuring gaps rather than levels, capturing gaps in outcome variables rather than input variables, and lastly ranking countries according to gender equality rather than women’s empowerment. The index examines the gap between men and women in four fundamental categories: economic participation and opportunity, educational attainment, health and survival and political empowerment. All of the data was presented in female/male ratio.
+The second dataset included in this project is titled “Percentage of citizenry obese, by nation” and it includes the total percentage of a nation’s obese population as well as separation between male and female percentages.Overall, I was curious to know if there was a correlation between gender gap disparities and obesity rates in the corresponding nations. Both datsets were found via data.world. I expect to see some sort of association for perhaps more developed countries to have higher equalities scores and lower obesity percentages, based on access to better education and opportunities.</p>
+</blockquote>
+<pre class="r"><code>library(tidyverse)
+library(tidyr)</code></pre>
+<pre class="r"><code>obesity &lt;- read.csv(&quot;~/Downloads/obese.csv&quot;)
+gendergap &lt;- read.csv(&quot;~/Downloads/gender.csv&quot;)
+obesity &lt;- obesity %&gt;% rename(ob.total = value)
+head(obesity)</code></pre>
+<pre><code>##   code              Country ob.total Female Male
+## 1  AFG          Afghanistan      2.9    4.1  1.8
+## 2  AGO               Angola     10.2   14.2  6.0
+## 3  ALB              Albania     17.6   18.7 16.5
+## 4  AND              Andorra     29.5   30.5 28.5
+## 5  ARE United Arab Emirates     37.2   45.1 33.8
+## 6  ARG            Argentina     26.3   28.9 23.6</code></pre>
+<pre class="r"><code>head(gendergap) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 6
+## Variables: 15
+## $ Country                                        &lt;fct&gt; Bahamas, Côte d&#39;Ivoire…
+## $ Overall...Rank                                 &lt;int&gt; 35, 136, 129, 139, 86,…
+## $ Overall...Score                                &lt;dbl&gt; 0.7269, 0.5874, 0.6064…
+## $ Economic.Participation.and.Opportunity...Rank  &lt;int&gt; 5, 112, 131, 142, 73, …
+## $ Economic.Participation.and.Opportunity...Score &lt;dbl&gt; 0.8223, 0.5817, 0.4609…
+## $ Educational.Attainment...Rank                  &lt;int&gt; 1, 137, 109, 101, 81, …
+## $ Educational.Attainment...Score                 &lt;dbl&gt; 1.0000, 0.7217, 0.9467…
+## $ Health.and.Survival...Rank                     &lt;int&gt; 1, 104, 57, 37, 1, 117
+## $ Health.and.Survival...Score                    &lt;dbl&gt; 0.9796, 0.9680, 0.9765…
+## $ Political.Empowerment...Rank                   &lt;int&gt; 101, 115, 134, 126, 95…
+## $ Political.Empowerment...Score                  &lt;dbl&gt; 0.1059, 0.0781, 0.0413…
+## $ Flag                                           &lt;fct&gt; http://www.crwflags.co…
+## $ Report.Page                                    &lt;fct&gt; http://reports.weforum…
+## $ Region                                         &lt;fct&gt; Latin America and the …
+## $ Income.Group                                   &lt;fct&gt; 1 (High Income), 3 (Lo…</code></pre>
+<pre class="r"><code>gendergap &lt;- gendergap %&gt;% rename(overallrank = Overall...Rank, 
+    overallscore = Overall...Score, econpart.opp.rank = Economic.Participation.and.Opportunity...Rank, 
+    econpart.opp.score = Economic.Participation.and.Opportunity...Score, 
+    edu.attain.rank = Educational.Attainment...Rank, edu.attain.score = Educational.Attainment...Score, 
+    healthsurvivalrank = Health.and.Survival...Rank, healthsurvivalscore = Health.and.Survival...Score, 
+    polemp.rank = Political.Empowerment...Rank, polemp.score = Political.Empowerment...Score)</code></pre>
+<blockquote>
+<p>Joining</p>
+</blockquote>
+<p><em>The datasets were collected based on country, so that’s what I decided to join them by. I felt that a full_join was the best function because I wanted to return the countries that appeared in both datasets and I wanted to keep all the variables from both sets. I also decided to remove columns 16 and 17 from the final dataset as I felt they were extraneous, they originally included links to the country’s respective flag and the links to how the gender gap scores were calculated/sourced.</em></p>
+<pre class="r"><code>fullset &lt;- obesity %&gt;% full_join(gendergap, by = &quot;Country&quot;)</code></pre>
+<pre><code>## Warning: Column `Country` joining factors with different levels, coercing to
+## character vector</code></pre>
+<pre class="r"><code>fullset %&gt;% dim()</code></pre>
+<pre><code>## [1] 195  19</code></pre>
+<pre class="r"><code>fullset &lt;- fullset %&gt;% na.omit()
+fullset %&gt;% dim()</code></pre>
+<pre><code>## [1] 126  19</code></pre>
+<pre class="r"><code>195 - 126</code></pre>
+<pre><code>## [1] 69</code></pre>
+<pre class="r"><code>fullset[16:17] &lt;- list(NULL)</code></pre>
+<blockquote>
+<p>Wrangling</p>
+</blockquote>
+<p><em>First, the data was filtered based on the variable ‘Income.Group’, more specifically those with the high income (“1 (High Income)), and the results only included 45 countries out of the 126 from the full dataset. Second, the data was arranged via overall rank and the country with the lowest rank was Jordan, who had a considerably high obesity percentage for both males and females. Third, the specific variables were selected for observation, including the country, obesity percentage value and the income group, and from a skim over the results there didn’t seem to be a clear association between income group and obesity rate. Next, I made a new categorical variable based on the obesity percentage values, where values greater the 20 were labeled high, values between 20 and 10 were labeled medium, and values less than 10 were considered low (this was just from a numerically objective perspective since I know population sizes vary greatly.) Next, the data was grouped by country as to compare the income groups, economic participation/opportunity and educational attainment ranks. Lastly, the data was manipulated to find the mean values of the obesity percentages (total, female, and male) and it was interesting to see that overall that the female’s had a greater obesity percentage than the males. </em></p>
+<pre class="r"><code># 1
+fullset %&gt;% filter(Income.Group == &quot;1 (High Income)&quot;) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 45
+## Variables: 17
+## $ code                &lt;fct&gt; ARE, AUS, AUT, BEL, BHR, BHS, BRB, BRN, CAN, CHE,…
+## $ Country             &lt;chr&gt; &quot;United Arab Emirates&quot;, &quot;Australia&quot;, &quot;Austria&quot;, &quot;…
+## $ ob.total            &lt;dbl&gt; 37.2, 28.6, 18.4, 20.2, 35.1, 36.2, 31.3, 18.1, 2…
+## $ Female              &lt;dbl&gt; 45.1, 28.8, 16.3, 18.2, 42.8, 42.5, 38.2, 20.1, 2…
+## $ Male                &lt;dbl&gt; 33.8, 28.4, 20.5, 22.3, 30.5, 29.7, 24.4, 16.2, 2…
+## $ overallrank         &lt;int&gt; 115, 24, 36, 10, 124, 35, 33, 98, 19, 11, 66, 95,…
+## $ overallscore        &lt;dbl&gt; 0.6436, 0.7409, 0.7266, 0.7809, 0.6261, 0.7269, 0…
+## $ econpart.opp.rank   &lt;int&gt; 123, 14, 68, 27, 126, 5, 20, 36, 17, 23, 119, 75,…
+## $ econpart.opp.score  &lt;dbl&gt; 0.5152, 0.8010, 0.6704, 0.7577, 0.4803, 0.8223, 0…
+## $ edu.attain.rank     &lt;int&gt; 83, 1, 1, 73, 90, 1, 42, 88, 1, 72, 30, 41, 1, 34…
+## $ edu.attain.score    &lt;dbl&gt; 0.9875, 1.0000, 1.0000, 0.9921, 0.9855, 1.0000, 0…
+## $ healthsurvivalrank  &lt;int&gt; 132, 70, 52, 52, 132, 1, 1, 126, 100, 70, 36, 69,…
+## $ healthsurvivalscore &lt;dbl&gt; 0.9612, 0.9737, 0.9789, 0.9789, 0.9612, 0.9796, 0…
+## $ polemp.rank         &lt;int&gt; 96, 53, 36, 13, 116, 101, 73, 142, 42, 16, 35, 12…
+## $ polemp.score        &lt;dbl&gt; 0.1106, 0.1887, 0.2573, 0.3948, 0.0774, 0.1059, 0…
+## $ Region              &lt;fct&gt; Middle East and North Africa, Asia and the Pacifi…
+## $ Income.Group        &lt;fct&gt; 1 (High Income), 1 (High Income), 1 (High Income)…</code></pre>
+<pre class="r"><code># 2
+fullset %&gt;% arrange(overallrank) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 126
+## Variables: 17
+## $ code                &lt;fct&gt; ISL, FIN, NOR, SWE, DNK, NIC, RWA, IRL, PHL, BEL,…
+## $ Country             &lt;chr&gt; &quot;Iceland&quot;, &quot;Finland&quot;, &quot;Norway&quot;, &quot;Sweden&quot;, &quot;Denmar…
+## $ ob.total            &lt;dbl&gt; 22.8, 20.6, 23.1, 20.5, 19.3, 17.1, 4.0, 25.6, 5.…
+## $ Female              &lt;dbl&gt; 21.5, 19.6, 21.7, 18.6, 17.0, 23.2, 6.6, 25.3, 6.…
+## $ Male                &lt;dbl&gt; 24.1, 21.6, 24.6, 22.5, 21.7, 10.8, 1.2, 25.9, 3.…
+## $ overallrank         &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15…
+## $ overallscore        &lt;dbl&gt; 0.8594, 0.8453, 0.8374, 0.8165, 0.8025, 0.7894, 0…
+## $ econpart.opp.rank   &lt;int&gt; 7, 21, 2, 15, 12, 95, 25, 28, 24, 27, 23, 34, 30,…
+## $ econpart.opp.score  &lt;dbl&gt; 0.8169, 0.7859, 0.8357, 0.7989, 0.8053, 0.6347, 0…
+## $ edu.attain.rank     &lt;int&gt; 1, 1, 1, 43, 1, 33, 114, 40, 1, 73, 72, 34, 1, 1,…
+## $ edu.attain.score    &lt;dbl&gt; 1.0000, 1.0000, 1.0000, 0.9974, 1.0000, 0.9996, 0…
+## $ healthsurvivalrank  &lt;int&gt; 128, 52, 98, 100, 65, 1, 118, 67, 1, 52, 70, 67, …
+## $ healthsurvivalscore &lt;dbl&gt; 0.9654, 0.9789, 0.9695, 0.9694, 0.9741, 0.9796, 0…
+## $ polemp.rank         &lt;int&gt; 1, 2, 3, 5, 7, 4, 6, 8, 17, 13, 16, 11, 14, 9, 25…
+## $ polemp.score        &lt;dbl&gt; 0.6554, 0.6162, 0.5444, 0.5005, 0.4306, 0.5439, 0…
+## $ Region              &lt;fct&gt; Europe and Central Asia, Europe and Central Asia,…
+## $ Income.Group        &lt;fct&gt; 1 (High Income), 1 (High Income), 1 (High Income)…</code></pre>
+<pre class="r"><code># 3
+fullset %&gt;% select(Country, ob.total, Income.Group) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 126
+## Variables: 3
+## $ Country      &lt;chr&gt; &quot;Angola&quot;, &quot;Albania&quot;, &quot;United Arab Emirates&quot;, &quot;Argentina&quot;…
+## $ ob.total     &lt;dbl&gt; 10.2, 17.6, 37.2, 26.3, 19.5, 28.6, 18.4, 22.5, 2.6, 20.…
+## $ Income.Group &lt;fct&gt; 2 (Upper-Middle Income), 2 (Upper-Middle Income), 1 (Hig…</code></pre>
+<pre class="r"><code># 4
+fullset &lt;- fullset %&gt;% mutate(obesity_rank = case_when(ob.total &gt; 
+    20 ~ &quot;high&quot;, 10 &lt;= ob.total &amp; ob.total &lt;= 20 ~ &quot;medium&quot;, 
+    ob.total &lt; 10 ~ &quot;low&quot;))</code></pre>
+<pre class="r"><code># 5
+fullset %&gt;% group_by(Country) %&gt;% select(Income.Group, econpart.opp.rank, 
+    edu.attain.rank) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 126
+## Variables: 4
+## Groups: Country [126]
+## $ Country           &lt;chr&gt; &quot;Angola&quot;, &quot;Albania&quot;, &quot;United Arab Emirates&quot;, &quot;Argen…
+## $ Income.Group      &lt;fct&gt; 2 (Upper-Middle Income), 2 (Upper-Middle Income), 1…
+## $ econpart.opp.rank &lt;int&gt; 111, 78, 123, 96, 82, 14, 68, 52, 1, 27, 43, 127, 3…
+## $ edu.attain.rank   &lt;int&gt; 138, 98, 83, 50, 31, 1, 1, 92, 120, 73, 133, 111, 6…</code></pre>
+<pre class="r"><code># 6
+fullset %&gt;% summarize(mean(ob.total), mean(Female), mean(Male))</code></pre>
+<pre><code>##   mean(ob.total) mean(Female) mean(Male)
+## 1       19.27222     22.65476   15.99444</code></pre>
+<pre class="r"><code># summary stastics
+summary(fullset)</code></pre>
+<pre><code>##       code       Country             ob.total         Female     
+##  AGO    :  1   Length:126         Min.   : 2.60   Min.   : 3.20  
+##  ALB    :  1   Class :character   1st Qu.:10.62   1st Qu.:16.07  
+##  ARE    :  1   Mode  :character   Median :20.70   Median :23.60  
+##  ARG    :  1                      Mean   :19.27   Mean   :22.65  
+##  ARM    :  1                      3rd Qu.:25.20   3rd Qu.:28.80  
+##  AUS    :  1                      Max.   :42.30   Max.   :49.70  
+##  (Other):120                                                     
+##       Male         overallrank      overallscore    econpart.opp.rank
+##  Min.   : 0.700   Min.   :  1.00   Min.   :0.5145   Min.   :  1.00   
+##  1st Qu.: 5.825   1st Qu.: 35.25   1st Qu.:0.6525   1st Qu.: 35.25   
+##  Median :18.500   Median : 72.50   Median :0.6935   Median : 70.50   
+##  Mean   :15.994   Mean   : 71.02   Mean   :0.6934   Mean   : 71.16   
+##  3rd Qu.:22.650   3rd Qu.:106.75   3rd Qu.:0.7268   3rd Qu.:105.75   
+##  Max.   :40.000   Max.   :142.00   Max.   :0.8594   Max.   :141.00   
+##                                                                      
+##  econpart.opp.score edu.attain.rank  edu.attain.score healthsurvivalrank
+##  Min.   :0.3094     Min.   :  1.00   Min.   :0.5743   Min.   :  1.00    
+##  1st Qu.:0.6101     1st Qu.: 34.25   1st Qu.:0.9496   1st Qu.:  1.00    
+##  Median :0.6634     Median : 67.50   Median :0.9933   Median : 69.50    
+##  Mean   :0.6563     Mean   : 67.41   Mean   :0.9547   Mean   : 65.72    
+##  3rd Qu.:0.7378     3rd Qu.:107.75   3rd Qu.:0.9995   3rd Qu.:108.50    
+##  Max.   :0.8630     Max.   :142.00   Max.   :1.0000   Max.   :142.00    
+##                                                                         
+##  healthsurvivalscore  polemp.rank      polemp.score    
+##  Min.   :0.9332      Min.   :  1.00   Min.   :0.00000  
+##  1st Qu.:0.9674      1st Qu.: 35.25   1st Qu.:0.09635  
+##  Median :0.9738      Median : 71.00   Median :0.15345  
+##  Mean   :0.9721      Mean   : 71.06   Mean   :0.19061  
+##  3rd Qu.:0.9796      3rd Qu.:107.75   3rd Qu.:0.25850  
+##  Max.   :0.9796      Max.   :142.00   Max.   :0.65540  
+##                                                        
+##                              Region                    Income.Group
+##  Asia and the Pacific           :20   1 (High Income)        :45   
+##  Europe and Central Asia        :41   2 (Upper-Middle Income):37   
+##  Latin America and the Caribbean:24   3 (Lower-Middle Income):26   
+##  Middle East and North Africa   :15   4 (Low Income)         :18   
+##  North America                  : 1                                
+##  Sub-Saharan Africa             :25                                
+##                                                                    
+##  obesity_rank      
+##  Length:126        
+##  Class :character  
+##  Mode  :character  
+##                    
+##                    
+##                    
+## </code></pre>
+<pre class="r"><code># value fullset %&gt;% summary(mean(value), sd(value), n(),
+# quantile() )
+fullset %&gt;% summarize_if(is.numeric, list(min = min, max = max), 
+    na.rm = T)</code></pre>
+<pre><code>##   ob.total_min Female_min Male_min overallrank_min overallscore_min
+## 1          2.6        3.2      0.7               1           0.5145
+##   econpart.opp.rank_min econpart.opp.score_min edu.attain.rank_min
+## 1                     1                 0.3094                   1
+##   edu.attain.score_min healthsurvivalrank_min healthsurvivalscore_min
+## 1               0.5743                      1                  0.9332
+##   polemp.rank_min polemp.score_min ob.total_max Female_max Male_max
+## 1               1                0         42.3       49.7       40
+##   overallrank_max overallscore_max econpart.opp.rank_max econpart.opp.score_max
+## 1             142           0.8594                   141                  0.863
+##   edu.attain.rank_max edu.attain.score_max healthsurvivalrank_max
+## 1                 142                    1                    142
+##   healthsurvivalscore_max polemp.rank_max polemp.score_max
+## 1                  0.9796             142           0.6554</code></pre>
+<pre class="r"><code>fullset %&gt;% summarize_if(is.numeric, list(Q3 = quantile), probs = 0.75)</code></pre>
+<pre><code>##   ob.total_Q3 Female_Q3 Male_Q3 overallrank_Q3 overallscore_Q3
+## 1        25.2      28.8   22.65         106.75        0.726825
+##   econpart.opp.rank_Q3 econpart.opp.score_Q3 edu.attain.rank_Q3
+## 1               105.75                0.7378             107.75
+##   edu.attain.score_Q3 healthsurvivalrank_Q3 healthsurvivalscore_Q3
+## 1              0.9995                 108.5                 0.9796
+##   polemp.rank_Q3 polemp.score_Q3
+## 1         107.75          0.2585</code></pre>
+<pre class="r"><code>fullset %&gt;% summarize_if(is.numeric, list(sd = sd), na.rm = T)</code></pre>
+<pre><code>##   ob.total_sd Female_sd  Male_sd overallrank_sd overallscore_sd
+## 1    9.221832  10.38901 9.262287       41.43746      0.05981639
+##   econpart.opp.rank_sd econpart.opp.score_sd edu.attain.rank_sd
+## 1             40.88803             0.1161662           44.82254
+##   edu.attain.score_sd healthsurvivalrank_sd healthsurvivalscore_sd
+## 1          0.08168695              47.93239             0.00914205
+##   polemp.rank_sd polemp.score_sd
+## 1       41.95127       0.1340801</code></pre>
+<pre class="r"><code>fullset %&gt;% summarize_if(is.numeric, list(mean = mean))</code></pre>
+<pre><code>##   ob.total_mean Female_mean Male_mean overallrank_mean overallscore_mean
+## 1      19.27222    22.65476  15.99444         71.02381         0.6934302
+##   econpart.opp.rank_mean econpart.opp.score_mean edu.attain.rank_mean
+## 1               71.15873               0.6563135              67.4127
+##   edu.attain.score_mean healthsurvivalrank_mean healthsurvivalscore_mean
+## 1              0.954677                65.72222                0.9721167
+##   polemp.rank_mean polemp.score_mean
+## 1         71.05556         0.1906071</code></pre>
+<pre class="r"><code>fullset %&gt;% summarize_if(is.numeric, list(var = var))</code></pre>
+<pre><code>##   ob.total_var Female_var Male_var overallrank_var overallscore_var
+## 1     85.04218   107.9316 85.78997        1717.063      0.003578001
+##   econpart.opp.rank_var econpart.opp.score_var edu.attain.rank_var
+## 1              1671.831             0.01349458             2009.06
+##   edu.attain.score_var healthsurvivalrank_var healthsurvivalscore_var
+## 1          0.006672758               2297.514            8.357708e-05
+##   polemp.rank_var polemp.score_var
+## 1        1759.909       0.01797747</code></pre>
+<pre class="r"><code>fullset %&gt;% select_if(is.numeric) %&gt;% cor %&gt;% glimpse()</code></pre>
+<pre><code>##  num [1:13, 1:13] 1 0.9585 0.948 -0.0756 0.0717 ...
+##  - attr(*, &quot;dimnames&quot;)=List of 2
+##   ..$ : chr [1:13] &quot;ob.total&quot; &quot;Female&quot; &quot;Male&quot; &quot;overallrank&quot; ...
+##   ..$ : chr [1:13] &quot;ob.total&quot; &quot;Female&quot; &quot;Male&quot; &quot;overallrank&quot; ...</code></pre>
+<pre class="r"><code>fullset %&gt;% group_by(Income.Group) %&gt;% summarize(count = n(), 
+    countavg = count/126)</code></pre>
+<pre><code>## # A tibble: 4 x 3
+##   Income.Group            count countavg
+##   &lt;fct&gt;                   &lt;int&gt;    &lt;dbl&gt;
+## 1 1 (High Income)            45    0.357
+## 2 2 (Upper-Middle Income)    37    0.294
+## 3 3 (Lower-Middle Income)    26    0.206
+## 4 4 (Low Income)             18    0.143</code></pre>
+<pre class="r"><code>fullset %&gt;% group_by(obesity_rank) %&gt;% summarize(count = n(), 
+    countavg = count/126)</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   obesity_rank count countavg
+##   &lt;chr&gt;        &lt;int&gt;    &lt;dbl&gt;
+## 1 high            69    0.548
+## 2 low             30    0.238
+## 3 medium          27    0.214</code></pre>
+<pre class="r"><code>fullset %&gt;% group_by(Region) %&gt;% summarize(count = n(), countavg = count/126)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##   Region                          count countavg
+##   &lt;fct&gt;                           &lt;int&gt;    &lt;dbl&gt;
+## 1 Asia and the Pacific               20  0.159  
+## 2 Europe and Central Asia            41  0.325  
+## 3 Latin America and the Caribbean    24  0.190  
+## 4 Middle East and North Africa       15  0.119  
+## 5 North America                       1  0.00794
+## 6 Sub-Saharan Africa                 25  0.198</code></pre>
+<pre class="r"><code>fullset %&gt;% group_by(Region, Income.Group, obesity_rank) %&gt;% 
+    summarize(count = n())</code></pre>
+<pre><code>## # A tibble: 33 x 4
+## # Groups:   Region, Income.Group [18]
+##    Region                  Income.Group            obesity_rank count
+##    &lt;fct&gt;                   &lt;fct&gt;                   &lt;chr&gt;        &lt;int&gt;
+##  1 Asia and the Pacific    1 (High Income)         high             2
+##  2 Asia and the Pacific    1 (High Income)         low              2
+##  3 Asia and the Pacific    1 (High Income)         medium           1
+##  4 Asia and the Pacific    2 (Upper-Middle Income) high             1
+##  5 Asia and the Pacific    2 (Upper-Middle Income) low              3
+##  6 Asia and the Pacific    2 (Upper-Middle Income) medium           1
+##  7 Asia and the Pacific    3 (Lower-Middle Income) low              6
+##  8 Asia and the Pacific    3 (Lower-Middle Income) medium           1
+##  9 Asia and the Pacific    4 (Low Income)          low              3
+## 10 Europe and Central Asia 1 (High Income)         high            23
+## # … with 23 more rows</code></pre>
+<blockquote>
+<p>Visualizing</p>
+</blockquote>
+<p><em>For the first plot, I was surprised to see that region with the clearest obesity percentage trend was Europe and Central Asia and Latin America and the Caribbean with a range around 17-27%. Similarly I was also surprised to see that the Middle East and North Africa regions had the higher overall gender gap rankings with a quite spread out range of obesity percentages. The two regions, Asia and the Pacific and Sub-Saharan Africa, also displayed very similar general trends both in terms of the obesity percentage range and gender gap rankings, both were more generally towards the lower end of the obesity percentages with a few outliers with ranging gender gap rakings. It’s to associate regions with the same pattern with each other since some are no where close to each other on the map or at least when you think of them in your head. Overall, the Middle East and North Africa region displayed the least variability within the gender gap rankings and the rest of the regions could be grouped by their gender gap ranking/obesity percentage relationship, Asia and the Pacific with Sub-Saharan Africa , and Latin America and the Caribbean with Europe and Cental Asia.</em>
+<em>For the second plot, I felt like for the most part, the economic participation and opportunity scores were pretty high across each income group, or at least there were some from each group that had high scores. It was also cool to see that there wasn’t one income group that had a higher economic participation and opporunity score than any other. However, it looks like for the high income group- the obesity percentages had the greatest range from around 16% to 50% and had the highest obesity percentages overall. The low income group was more concentrated around the lower female obesity percentages, which would make sense if you think about the relationship between income and access to food. The proceeding lower range of female obesity belonged to the lower-middle income group and the second highest range belonged to upper-middle income. The highest concentration of income groups looked like it was around 16-23%, where it seemed that each group was present. </em></p>
+<pre class="r"><code># visualizations
+library(RColorBrewer)
+ggplot(fullset, aes(ob.total, overallrank, color = Region)) + 
+    geom_point() + ggtitle(&quot;Overall Gender Gap Ranking vs Total Obesity Percentage by Region&quot;) + 
+    ylab(&quot;Overall Gender Gap Ranking&quot;) + xlab(&quot;Obesity Percentage&quot;) + 
+    scale_y_continuous(breaks = seq(0, 150, 10)) + scale_x_continuous(breaks = seq(0, 
+    50, 5)) + scale_color_manual(values = c(&quot;red&quot;, &quot;orange&quot;, 
+    &quot;yellow&quot;, &quot;green&quot;, &quot;blue&quot;, &quot;purple&quot;))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(fullset, aes(x = Female, y = econpart.opp.score, fill = Income.Group)) + 
+    geom_bar(stat = &quot;summary&quot;, fun.y = &quot;mean&quot;, position = &quot;dodge&quot;) + 
+    ggtitle(&quot;Education Participation and Opporunity Score vs Obesity Percentage by Income Group&quot;) + 
+    ylab(&quot;Economic participation and Opporunity Score&quot;) + xlab(&quot;Female Obesity Percentage&quot;) + 
+    scale_x_continuous(breaks = seq(1, 50, 2))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-12-2.png" width="768" style="display: block; margin: auto;" /></p>
+<blockquote>
+<p>Dimensionality Reduction</p>
+</blockquote>
+<p><em>Based on the PCA, it was made very clear how much variance was in the dataset. It was interesting to see how the rankings and the scores for most of the variables varied so much from each other, negatively correlated, but it makes the most sense since a higher score (closerb to 1) would mean a better rank ( a lower number). Female obesity, total obesity, and male obesity, showed an understanable correlation with each other. The fact that education attainment rank and health survival rank are the most closely correlated was not something that I had considered but it makes the most sense, again if you are to be in an area with good infrastructure that can provide education, you probably have better chances to take care of your health and survive. The total obesity and overall rank were quite far from each other, which kind of supports my hypothesis, countries with better gender gap ranks would have lower obesity percentages. Economic participation and opportunity (rank and score) most correlated with political empowerment (rank and score), which would also make sense, if you have more opportunities to participate you would feel more empowered to be involved with politics/policies that would in turn affect those economic opportunities and your ability to participate. </em></p>
+<pre class="r"><code>fullsetnum &lt;- fullset %&gt;% select_if(is.numeric) %&gt;% scale
+rownames(fullsetnum) &lt;- fullset$Name
+fullsetpca &lt;- princomp(fullsetnum)
+names(fullsetpca)</code></pre>
+<pre><code>## [1] &quot;sdev&quot;     &quot;loadings&quot; &quot;center&quot;   &quot;scale&quot;    &quot;n.obs&quot;    &quot;scores&quot;   &quot;call&quot;</code></pre>
+<pre class="r"><code>summary(fullsetpca, loadings = T)</code></pre>
+<pre><code>## Importance of components:
+##                           Comp.1    Comp.2    Comp.3     Comp.4     Comp.5
+## Standard deviation     2.2893649 1.8782729 1.2664560 1.10506391 0.76323288
+## Proportion of Variance 0.4063939 0.2735487 0.1243648 0.09468735 0.04516805
+## Cumulative Proportion  0.4063939 0.6799426 0.8043074 0.89899472 0.94416277
+##                            Comp.6     Comp.7      Comp.8      Comp.9
+## Standard deviation     0.51774004 0.42353892 0.337136737 0.288842345
+## Proportion of Variance 0.02078455 0.01390925 0.008813113 0.006469026
+## Cumulative Proportion  0.96494732 0.97885658 0.987669691 0.994138717
+##                            Comp.10     Comp.11      Comp.12      Comp.13
+## Standard deviation     0.220347046 0.162387441 2.587071e-02 3.884507e-04
+## Proportion of Variance 0.003764711 0.002044664 5.189602e-05 1.170008e-08
+## Cumulative Proportion  0.997903428 0.999948092 1.000000e+00 1.000000e+00
+## 
+## Loadings:
+##                     Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7 Comp.8
+## ob.total             0.109  0.491  0.149         0.276                     
+## Female                      0.492                0.304  0.119  0.326  0.561
+## Male                 0.151  0.443  0.232         0.222        -0.314 -0.632
+## overallrank         -0.418  0.104                      -0.112        -0.160
+## overallscore         0.418 -0.105                       0.158              
+## econpart.opp.rank   -0.315  0.170         0.504 -0.257                     
+## econpart.opp.score   0.321 -0.175        -0.495  0.184                     
+## edu.attain.rank     -0.324 -0.211                0.432  0.794 -0.125 -0.111
+## edu.attain.score     0.269  0.282               -0.649  0.537 -0.155       
+## healthsurvivalrank  -0.185 -0.111  0.640 -0.155        -0.117 -0.576  0.404
+## healthsurvivalscore  0.182        -0.637  0.183  0.197        -0.634  0.250
+## polemp.rank         -0.285  0.229 -0.176 -0.477 -0.136        -0.105       
+## polemp.score         0.292 -0.213  0.238  0.458  0.112                     
+##                     Comp.9 Comp.10 Comp.11 Comp.12 Comp.13
+## ob.total                                    0.804         
+## Female              -0.133                 -0.446         
+## Male                 0.135                 -0.392         
+## overallrank         -0.283  0.354   0.753                 
+## overallscore        -0.352  0.219                  -0.774 
+## econpart.opp.rank           0.545  -0.495                 
+## econpart.opp.score          0.640  -0.140           0.376 
+## edu.attain.rank                                           
+## edu.attain.score                    0.194           0.264 
+## healthsurvivalrank          0.101                         
+## healthsurvivalscore                                       
+## polemp.rank         -0.621 -0.263  -0.343                 
+## polemp.score        -0.601 -0.176                   0.434</code></pre>
+<pre class="r"><code>eigval &lt;- fullsetpca$sdev^2
+varprop = round(eigval/sum(eigval), 2)
+ggplot() + geom_bar(aes(y = varprop, x = 1:13), stat = &quot;identity&quot;) + 
+    xlab(&quot;&quot;) + geom_path(aes(y = varprop, x = 1:13)) + geom_text(aes(x = 1:13, 
+    y = varprop, label = round(varprop, 2)), vjust = 1, col = &quot;white&quot;, 
+    size = 5) + scale_y_continuous(breaks = seq(0, 0.6, 0.2), 
+    labels = scales::percent) + scale_x_continuous(breaks = 1:10)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>round(cumsum(eigval)/sum(eigval), 2)</code></pre>
+<pre><code>##  Comp.1  Comp.2  Comp.3  Comp.4  Comp.5  Comp.6  Comp.7  Comp.8  Comp.9 Comp.10 
+##    0.41    0.68    0.80    0.90    0.94    0.96    0.98    0.99    0.99    1.00 
+## Comp.11 Comp.12 Comp.13 
+##    1.00    1.00    1.00</code></pre>
+<pre class="r"><code>eigval</code></pre>
+<pre><code>##       Comp.1       Comp.2       Comp.3       Comp.4       Comp.5       Comp.6 
+## 5.241192e+00 3.527909e+00 1.603911e+00 1.221166e+00 5.825244e-01 2.680547e-01 
+##       Comp.7       Comp.8       Comp.9      Comp.10      Comp.11      Comp.12 
+## 1.793852e-01 1.136612e-01 8.342990e-02 4.855282e-02 2.636968e-02 6.692939e-04 
+##      Comp.13 
+## 1.508939e-07</code></pre>
+<pre class="r"><code>summary(fullsetpca, loadings = T)</code></pre>
+<pre><code>## Importance of components:
+##                           Comp.1    Comp.2    Comp.3     Comp.4     Comp.5
+## Standard deviation     2.2893649 1.8782729 1.2664560 1.10506391 0.76323288
+## Proportion of Variance 0.4063939 0.2735487 0.1243648 0.09468735 0.04516805
+## Cumulative Proportion  0.4063939 0.6799426 0.8043074 0.89899472 0.94416277
+##                            Comp.6     Comp.7      Comp.8      Comp.9
+## Standard deviation     0.51774004 0.42353892 0.337136737 0.288842345
+## Proportion of Variance 0.02078455 0.01390925 0.008813113 0.006469026
+## Cumulative Proportion  0.96494732 0.97885658 0.987669691 0.994138717
+##                            Comp.10     Comp.11      Comp.12      Comp.13
+## Standard deviation     0.220347046 0.162387441 2.587071e-02 3.884507e-04
+## Proportion of Variance 0.003764711 0.002044664 5.189602e-05 1.170008e-08
+## Cumulative Proportion  0.997903428 0.999948092 1.000000e+00 1.000000e+00
+## 
+## Loadings:
+##                     Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7 Comp.8
+## ob.total             0.109  0.491  0.149         0.276                     
+## Female                      0.492                0.304  0.119  0.326  0.561
+## Male                 0.151  0.443  0.232         0.222        -0.314 -0.632
+## overallrank         -0.418  0.104                      -0.112        -0.160
+## overallscore         0.418 -0.105                       0.158              
+## econpart.opp.rank   -0.315  0.170         0.504 -0.257                     
+## econpart.opp.score   0.321 -0.175        -0.495  0.184                     
+## edu.attain.rank     -0.324 -0.211                0.432  0.794 -0.125 -0.111
+## edu.attain.score     0.269  0.282               -0.649  0.537 -0.155       
+## healthsurvivalrank  -0.185 -0.111  0.640 -0.155        -0.117 -0.576  0.404
+## healthsurvivalscore  0.182        -0.637  0.183  0.197        -0.634  0.250
+## polemp.rank         -0.285  0.229 -0.176 -0.477 -0.136        -0.105       
+## polemp.score         0.292 -0.213  0.238  0.458  0.112                     
+##                     Comp.9 Comp.10 Comp.11 Comp.12 Comp.13
+## ob.total                                    0.804         
+## Female              -0.133                 -0.446         
+## Male                 0.135                 -0.392         
+## overallrank         -0.283  0.354   0.753                 
+## overallscore        -0.352  0.219                  -0.774 
+## econpart.opp.rank           0.545  -0.495                 
+## econpart.opp.score          0.640  -0.140           0.376 
+## edu.attain.rank                                           
+## edu.attain.score                    0.194           0.264 
+## healthsurvivalrank          0.101                         
+## healthsurvivalscore                                       
+## polemp.rank         -0.621 -0.263  -0.343                 
+## polemp.score        -0.601 -0.176                   0.434</code></pre>
+<pre class="r"><code>eigen(cor(fullsetnum))</code></pre>
+<pre><code>## eigen() decomposition
+## $values
+##  [1] 5.283121e+00 3.556132e+00 1.616742e+00 1.230936e+00 5.871846e-01
+##  [6] 2.701992e-01 1.808203e-01 1.145705e-01 8.409734e-02 4.894124e-02
+## [11] 2.658064e-02 6.746482e-04 1.521011e-07
+## 
+## $vectors
+##              [,1]        [,2]         [,3]         [,4]        [,5]        [,6]
+##  [1,]  0.10884490 -0.49053482 -0.148787945  0.020673408  0.27577339 -0.02129315
+##  [2,]  0.05088296 -0.49156698 -0.079487969  0.038160471  0.30361182 -0.11893773
+##  [3,]  0.15099605 -0.44256770 -0.232207070 -0.004348787  0.22230962  0.07346192
+##  [4,] -0.41764022 -0.10443074  0.055035699 -0.013001451 -0.02364751  0.11230677
+##  [5,]  0.41807383  0.10486753 -0.096921606  0.006801407 -0.06152116 -0.15775769
+##  [6,] -0.31493691 -0.16974228  0.004245241  0.504046973 -0.25708376  0.01260598
+##  [7,]  0.32096874  0.17511109  0.040307609 -0.494891654  0.18402772  0.00125658
+##  [8,] -0.32407034  0.21118696  0.005334472  0.039684865  0.43236609 -0.79427296
+##  [9,]  0.26929981 -0.28187968 -0.021828198 -0.048542465 -0.64853982 -0.53666524
+## [10,] -0.18472610  0.11131505 -0.640400153 -0.154695437 -0.02213107  0.11743725
+## [11,]  0.18223738 -0.07910188  0.636748185  0.183380458  0.19746669  0.08904146
+## [12,] -0.28545926 -0.22936546  0.175709845 -0.477009918 -0.13555762  0.01693813
+## [13,]  0.29151925  0.21255416 -0.237946952  0.458118202  0.11243635  0.03817169
+##                [,7]         [,8]         [,9]        [,10]       [,11]
+##  [1,]  0.0300854351 -0.003949399 -0.004029784  0.011784327 -0.02092575
+##  [2,]  0.3258076621 -0.560888843  0.132682971  0.062833096 -0.02911324
+##  [3,] -0.3142373367  0.632196876 -0.134781280 -0.010025444  0.04821704
+##  [4,] -0.0007289937  0.160043607  0.283059600  0.353648320 -0.75327979
+##  [5,] -0.0370932038  0.043923599  0.352360308  0.219149489 -0.03081640
+##  [6,]  0.0124741333  0.055956292  0.074232366  0.545184105  0.49520456
+##  [7,]  0.0883537076  0.056679774  0.062646500  0.640268433  0.13977082
+##  [8,] -0.1253376272  0.110984545  0.014945264  0.007117755  0.05066182
+##  [9,] -0.1546292378 -0.053206289 -0.046558896  0.011129094 -0.19393035
+## [10,] -0.5758807827 -0.403545213 -0.009581931  0.100714847  0.01948999
+## [11,] -0.6343885790 -0.250200192  0.032925914  0.073987116 -0.04501210
+## [12,] -0.1054860270  0.070825358  0.621219691 -0.262507635  0.34314559
+## [13,] -0.0051129641  0.078833309  0.600846502 -0.175633891 -0.05399693
+##               [,12]         [,13]
+##  [1,]  0.8043262636  2.076012e-03
+##  [2,] -0.4455595792 -1.153765e-03
+##  [3,] -0.3918754598 -1.008573e-03
+##  [4,] -0.0081249210  2.695726e-04
+##  [5,]  0.0075477720 -7.743440e-01
+##  [6,]  0.0204821674 -1.298275e-04
+##  [7,]  0.0110462035  3.759785e-01
+##  [8,]  0.0098707579 -2.519803e-05
+##  [9,] -0.0035919670  2.644250e-01
+## [10,]  0.0076367522  1.084768e-04
+## [11,] -0.0048406544  2.962392e-02
+## [12,]  0.0106161586 -1.405432e-04
+## [13,]  0.0004870491  4.338510e-01</code></pre>
+<pre class="r"><code>fullsetdf &lt;- data.frame(PC1 = fullsetpca$scores[, 1], PC2 = fullsetpca$scores[, 
+    2])
+ggplot(fullsetdf, aes(PC1, PC2)) + geom_point()</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-13-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fullsetpca$loadings[1:13, 1:2] %&gt;% as.data.frame %&gt;% rownames_to_column %&gt;% 
+    ggplot() + geom_hline(aes(yintercept = 0), lty = 2) + geom_vline(aes(xintercept = 0), 
+    lty = 2) + ylab(&quot;PC2&quot;) + xlab(&quot;PC1&quot;) + geom_segment(aes(x = 0, 
+    y = 0, xend = Comp.1, yend = Comp.2), arrow = arrow(), col = &quot;purple&quot;) + 
+    geom_label(aes(x = Comp.1 * 1.1, y = Comp.2 * 1.1, label = rowname))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-13-3.png" width="768" style="display: block; margin: auto;" /></p>
+<p>```</p>

@@ -1,0 +1,2 @@
+"0","#6"
+"0","fullset %>% summarize (mean(ob.total), mean(Female), mean(Male))"

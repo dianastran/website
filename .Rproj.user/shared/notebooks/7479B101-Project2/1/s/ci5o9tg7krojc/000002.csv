@@ -1,0 +1,2 @@
+"0","cereal<-read.csv(""~/Downloads/cereal.csv"")"
+"0","cereal <- cereal %>% mutate(y=ifelse(type==""C"",1,0))"

@@ -1,0 +1,4 @@
+"0","SSW <- cereal1 %>% group_by(mfr) %>% select(sodium, rating, calories) %>% do(d=dist(.[2:2], ""euclidean"")) %>% ungroup()%>% summarize(sum(unlist(d)))
+"
+"2","Adding missing grouping variables: `mfr`
+"
