@@ -10,7 +10,7 @@ description: ''
 
 # Python discussion 
 
-This is the blog post that is dedicated to Python and what we've learned in class. The thing I most enjoyed about Python this semester was what we learned for homework 11 where our task was to use regular expressions in python to match (and return) the requested parts in each. I just really enjoyed the process of looking for patterns in the strings that could ultimately be used in the re.findall() function to return what was asked. The following chunks of code below are some of my favorites from the homework. 
+This is the blog post that is dedicated to Python and what we've learned in class. The thing I most enjoyed about Python this semester was what we learned for homework 11 where our task was to use regular expressions in python to match (and return) the requested parts in each. I just really enjoyed the process of looking for patterns in the strings that could ultimately be used in the re.findall() function to return what was asked. The following chunks of code below are some of my favorites from the homework. At the bottom of this page is a picture of a cheat sheet that found really useful in debunking ths homework.
 
 ```{r}
 library("reticulate")
@@ -75,4 +75,4 @@ string7="ATGGCAATAACCCCCCGTTTCTACTTCTAGAGGAGAAAAGTATTGACATGAGCGCTCCCGGCACAAGGGCC
 
 re.findall(r'(A.TAAT)|(GC[AG][AT]TG)', string7)
 ```
-
+![](/blog/2019-12-12-python-stuff_files/cheatsheet.png)

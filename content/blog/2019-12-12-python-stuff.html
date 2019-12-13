@@ -12,7 +12,7 @@ description: ''
 
 <div id="python-discussion" class="section level1">
 <h1>Python discussion</h1>
-<p>This is the blog post that is dedicated to Python and what we’ve learned in class. The thing I most enjoyed about Python this semester was what we learned for homework 11 where our task was to use regular expressions in python to match (and return) the requested parts in each. I just really enjoyed the process of looking for patterns in the strings that could ultimately be used in the re.findall() function to return what was asked. The following chunks of code below are some of my favorites from the homework.</p>
+<p>This is the blog post that is dedicated to Python and what we’ve learned in class. The thing I most enjoyed about Python this semester was what we learned for homework 11 where our task was to use regular expressions in python to match (and return) the requested parts in each. I just really enjoyed the process of looking for patterns in the strings that could ultimately be used in the re.findall() function to return what was asked. The following chunks of code below are some of my favorites from the homework. At the bottom of this page is a picture of a cheat sheet that found really useful in debunking ths homework.</p>
 <pre class="r"><code>library(&quot;reticulate&quot;)</code></pre>
 <p>matching all ftp addresses in the string</p>
 <pre class="python"><code>import re
@@ -65,4 +65,5 @@ re.findall(r&#39;(\$[\\]*[^\$]*\$)&#39;,string4)</code></pre>
 
 re.findall(r&#39;(A.TAAT)|(GC[AG][AT]TG)&#39;, string7)</code></pre>
 <pre><code>## [(&#39;&#39;, &#39;GCGTTG&#39;), (&#39;ATTAAT&#39;, &#39;&#39;), (&#39;&#39;, &#39;GCAATG&#39;), (&#39;ACTAAT&#39;, &#39;&#39;)]</code></pre>
+<p><img src="/blog/2019-12-12-python-stuff_files/cheatsheet.png" /></p>
 </div>
