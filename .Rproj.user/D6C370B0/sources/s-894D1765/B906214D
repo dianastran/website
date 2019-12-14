@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576291091728.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2301765648",
+    "id" : "B906214D",
+    "lastKnownWriteTime" : 1576292166,
+    "last_content_update" : 1576292166769,
+    "path" : "~/Desktop/finalprojectwebsite/content/blog/2019-12-13-crafts.Rmd",
+    "project_path" : "content/blog/2019-12-13-crafts.Rmd",
+    "properties" : {
+        "cursorPosition" : "26,47",
+        "scrollLine" : "16"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
